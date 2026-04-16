@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physik 8: Hefteintrag</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .copy-note {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: var(--accent-cyan);
+            font-weight: bold;
+            background: rgba(6, 182, 212, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent-cyan);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stars"></div>
+    <div class="nav-header" style="position: relative;">
+        <a href="simulation.html" class="btn btn-outline"
+            style="position: absolute; left: 15px; top: 15px; padding: 0.4rem 0.8rem; font-size: 0.9rem;">⬅ Zurück</a>
+        <h1>Die Kraft - Mission 3</h1>
+        <div class="progress-pills">
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill"></div>
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="glass-panel">
+            <h2>Einwirkung und Kraft</h2>
+            <p>Übernimm die Überschrift "Einwirkung und Kraft" in dein Heft und fülle den folgenden virtuellen
+                Hefteintrag komplett aus! Ordne die Worte (durch Klicken) den Lücken zu. <br><em>(Hinweis: Die blauen
+                    Boxen am Ende akzeptieren die Formelzeichen in beliebiger Reihenfolge).</em></p>
+
+            <div class="word-bank" id="word-bank">
+                <!-- Werden via JavaScript gemischt -->
+                <span class="word-chip" data-word="Kraft">Kraft</span>
+                <span class="word-chip" data-word="Geschwindigkeit">Geschwindigkeit</span>
+                <span class="word-chip" data-word="Pfeile">Pfeile</span>
+                <span class="word-chip" data-word="Trägheit">Trägheit</span>
+                <span class="word-chip" data-word="Kraft F">Kraft F</span>
+                <span class="word-chip" data-word="Masse m">Masse m</span>
+                <span class="word-chip" data-word="Einwirkungsdauer Δt">Einwirkungsdauer Δt</span>
+                <span class="word-chip" data-word="Geschwindigkeitsänderung Δv">Geschwindigkeitsänderung Δv</span>
+            </div>
+
+            <div class="notebook-exact mt-2" id="notebook">
+                <div class="red-box">
+                    <p>Die Einwirkungsstärke und -richtung werden zusammenfassend als <strong class="text-green"><span
+                                class="drop-blank underline-blank" data-target="Kraft">________</span>
+                            \(\vec{F}\)</strong> bezeichnet. Die Kraft kann, genau wie die <span
+                            class="drop-blank underline-blank" data-target="Geschwindigkeit">________</span>, auch durch
+                        <span class="drop-blank underline-blank" data-target="Pfeile">________</span> (Vektoren)
+                        dargestellt werden.</p>
+                    <div class="red-box-footer">
+                        <span>\(\vec{F}\): Kraftpfeil</span>
+                        <span>\(F\): Betrag der Kraft</span>
+                        <span>\([F] = 1 N \text{ (1 Newton)}\)</span>
+                    </div>
+                </div>
+
+                <p class="notebook-text mt-2">Neben der Kraft und der Einwirkungsdauer hat auch die Masse des Körpers
+                    einen Einfluss auf die Geschwindigkeitsänderung. Man spricht dabei auch von der <span
+                        class="drop-blank underline-blank" data-target="Trägheit">________</span> eines Körpers.</p>
+
+                <h3 class="notebook-subtitle mt-2">Relevante Größen für die Einwirkung:</h3>
+                <div class="blue-boxes">
+                    <div class="blue-box drop-blank var-box" data-target="any_var">???</div>
+                    <div class="blue-box drop-blank var-box" data-target="any_var">???</div>
+                    <div class="blue-box drop-blank var-box" data-target="any_var">???</div>
+                    <div class="blue-box drop-blank var-box" data-target="any_var">???</div>
+                </div>
+            </div>
+
+            <div id="copy-instruction" class="copy-note hidden pulse">
+                <h3>📖 Jetzt ins echte Physikheft abschreiben!</h3>
+                <p>Nimm dir einen Stift und übernimm das gesamte weiße Blatt oben exakt so in dein Heft!
+                    <strong>Schreibe dazu auch als Erstes die große Überschrift "Einwirkung und Kraft" oben auf die
+                        Seite!</strong> Vergiss zudem den Vektorpfeil \(\vec{F}\) nicht! Klicke erst auf "Weiter", wenn
+                    du fertig geschrieben hast.</p>
+                <a href="uebungen.html" class="btn mt-1">Habe ich abgeschrieben! ➔</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        // Shuffle Bank
+        const bank = document.getElementById('word-bank');
+        const chipsArr = Array.from(bank.children);
+        chipsArr.sort(() => Math.random() - 0.5);
+        chipsArr.forEach(c => bank.appendChild(c));
+
+        let selectedWord = null;
+        let selectedElement = null;
+        let chips = document.querySelectorAll('.word-chip');
+        const blanks = document.querySelectorAll('.drop-blank');
+        const targetVars = ["Kraft F", "Einwirkungsdauer Δt", "Masse m", "Geschwindigkeitsänderung Δv"];
+        let blueBoxesFilled = [];
+
+        const checkCompletionS3 = () => {
+            let ublanksOK = true;
+            document.querySelectorAll('.underline-blank').forEach(b => { if (!b.classList.contains('filled')) ublanksOK = false; });
+            let varsOK = targetVars.every(tw => blueBoxesFilled.includes(tw)) && blueBoxesFilled.length === 4;
+            if (ublanksOK && varsOK) {
+                document.getElementById('copy-instruction').classList.remove('hidden');
+            }
+        };
+
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                if (chip.classList.contains('used')) return;
+                chips.forEach(c => c.style.border = '2px solid transparent');
+                chip.style.border = '2px solid white';
+                selectedWord = chip.dataset.word;
+                selectedElement = chip;
+            });
+        });
+
+        blanks.forEach(blank => {
+            blank.addEventListener('click', () => {
+                if (selectedWord && !blank.classList.contains('filled')) {
+                    if (blank.classList.contains('var-box')) {
+                        if (targetVars.includes(selectedWord)) {
+                            blank.textContent = selectedWord;
+                            blank.classList.add('filled');
+                            selectedElement.classList.add('used');
+                            blueBoxesFilled.push(selectedWord);
+                            selectedWord = null;
+                            selectedElement.style.border = '2px solid transparent';
+                        } else {
+                            blank.innerHTML = "<span style='color:red'>Passt nicht hier rein</span>";
+                            setTimeout(() => blank.innerHTML = "???", 1000);
+                        }
+                    } else {
+                        if (selectedWord === blank.dataset.target) {
+                            blank.textContent = selectedWord;
+                            blank.classList.add('filled');
+                            selectedElement.classList.add('used');
+                            selectedWord = null;
+                            selectedElement.style.border = '2px solid transparent';
+                        } else {
+                            let old = blank.innerHTML;
+                            blank.innerHTML = "<span style='color:red'>X</span>";
+                            setTimeout(() => blank.innerHTML = old, 500);
+                        }
+                    }
+                    checkCompletionS3();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

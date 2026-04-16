@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physik 8: Die Formel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .waage-container { margin: 4rem auto 2rem; width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
+        .waage-base { width: 12px; height: 180px; background: #64748b; margin: 0 auto; position: relative; border-radius: 6px 6px 0 0; }
+        .waage-stand { width: 120px; height: 15px; background: #64748b; border-radius: 10px; margin: 0 auto; }
+        .waage-arm { width: 440px; height: 12px; background: #94a3b8; position: absolute; top: 5px; left: -214px; transform-origin: center; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index:2; }
+        .waage-gelenk { width: 16px; height: 16px; background: #cbd5e1; border-radius: 50%; position: absolute; top: 3px; left: -2px; z-index: 3; }
+        
+        .schale-aufhaengung { position: absolute; top: 12px; width: 2px; height: 40px; background: #94a3b8; }
+        .schale { width: 160px; min-height: 150px; border: 3px dashed rgba(255,255,255,0.4); border-radius: 12px; position: absolute; top: 52px; background: rgba(0,0,0,0.4); display:flex; flex-direction:column; gap:0.5rem; padding: 0.8rem; align-items:center; z-index:1; }
+        .schale.left { left: 0; transform: translateX(-50%); }
+        .schale.right { right: 0; transform: translateX(50%); }
+        .schale-aufhaengung.left { left: 0; }
+        .schale-aufhaengung.right { right: 0; }
+
+        .schale.drag-over { border-color: var(--accent-magenta); background: rgba(217, 70, 239, 0.2); }
+
+        .drag-box { background: linear-gradient(135deg, rgba(6,182,212,0.9), rgba(59,130,246,0.9)); color: white; padding: 0.6rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.5); cursor: grab; font-weight: bold; width: 100%; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.2); font-size: 0.95rem; }
+        .drag-box.dragging { opacity: 0.5; background: grey; }
+        .bank { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; flex-wrap: wrap; min-height: 80px; }
+
+        .schale-title { font-size: 0.9rem; font-weight: bold; color: rgba(255,255,255,0.7); text-align: center; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px; width: 100%; }
+
+        .formel-reveal {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(217, 119, 6, 0.2));
+            border: 2px solid var(--accent-gold, #facc15);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-top: 3rem;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 1s ease-out;
+        }
+        .formel-reveal.active { opacity: 1; transform: scale(1); }
+        .merksatz-box { background: rgba(0,0,0,0.5); padding: 1rem; border-radius: 8px; border-left: 5px solid #facc15; margin-top: 1rem; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="nav-header" style="position: relative;">
+        <a href="uebungen.html" class="btn btn-outline" style="position: absolute; left: 15px; top: 15px; padding: 0.4rem 0.8rem; font-size: 0.9rem;">⬅ Zurück</a>
+        <h1>Die Kraft - Mission 5 (Gleichung)</h1>
+        <div class="progress-pills">
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+        </div>
+    </div>
+
+    <main class="container">
+        
+        <header class="text-center mb-1">
+            <h1 class="glitch" data-text="Die Physik-Waage">Die Physik-Waage</h1>
+            <p class="subtitle">Bringe Ursache und Auswirkung ins perfekte Gleichgewicht!</p>
+        </header>
+
+        <section class="glass-panel">
+            <p>Du weißt nun, wie sich die Variablen gegenseitig beeinflussen. Doch wie sieht die finale mathematische Formel aus? <br><br>Ganz einfach: Die Seite der <strong>"Einwirkung" (Ursache)</strong> muss exakt so groß sein wie die Seite der daraus resultierenden <strong>"Bewegungsänderung" (Auswirkung)</strong>! Ziehe die Physikbausteine in die korrekten Waagschalen, um die Waage ins Gleichgewicht zu bringen.</p>
+            
+            <div class="bank" id="b-bank">
+                <div draggable="true" id="d-f" class="drag-box" data-type="cause">Kraft (\(F\))</div>
+                <div draggable="true" id="d-m" class="drag-box" data-type="effect">Masse (\(m\))</div>
+                <div draggable="true" id="d-t" class="drag-box" data-type="cause">Einwirkungsdauer (\(\Delta t\))</div>
+                <div draggable="true" id="d-v" class="drag-box" data-type="effect">Geschwindigkeitsänderung (\(\Delta v\))</div>
+            </div>
+
+            <div class="waage-container">
+                <div class="waage-base">
+                    <div class="waage-gelenk"></div>
+                    <div class="waage-arm" id="waage-arm" style="transform: rotate(15deg);">
+                        <div class="schale-aufhaengung left"></div>
+                        <div class="schale left" id="schale-cause" data-accept="cause">
+                            <div class="schale-title">Die Ursache (Einwirkung)</div>
+                        </div>
+
+                        <div class="schale-aufhaengung right"></div>
+                        <div class="schale right" id="schale-effect" data-accept="effect">
+                            <div class="schale-title">Die Auswirkung (Reaktion)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="waage-stand"></div>
+            </div>
+
+            <div id="formel-result" class="formel-reveal hidden">
+                <h3 style="color:#facc15; font-size: 1.5rem;">🎉 PERFEKT AUSBALANCIERT!</h3>
+                <p>Du hast den <strong>Impulssatz</strong> (die wahrscheinlich wichtigste Formel der Bewegungslehre) selbst hergeleitet!</p>
+                <div style="font-size: 2rem; margin: 1.5rem 0;">
+                    \[ F \cdot \Delta t = m \cdot \Delta v \]
+                </div>
+                <div class="merksatz-box pulse">
+                    <h4 style="margin-bottom:0.5rem; color:#facc15;">📝 Ab ins Heft damit!</h4>
+                    <p style="margin:0;">Jede Krafteinwirkung baut bei einem Körper über die Zeit einen Impuls auf. Diese Ursache (\(F \cdot \Delta t\)) gleicht exakt der sich aufbauenden Bewegung des Trägheitskörpers (\(m \cdot \Delta v\)).</p>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="index.html" class="btn btn-outline">Zurück zum Startmenü</a>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        const draggables = document.querySelectorAll('.drag-box');
+        const dropzones = [document.getElementById('schale-cause'), document.getElementById('schale-effect'), document.getElementById('b-bank')];
+        const arm = document.getElementById('waage-arm');
+        const formelResult = document.getElementById('formel-result');
+
+        let leftCount = 0;
+        let rightCount = 0;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => { draggable.classList.add('dragging'); });
+            draggable.addEventListener('dragend', () => { draggable.classList.remove('dragging'); checkBalance(); });
+        });
+
+        dropzones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', () => { zone.classList.remove('drag-over'); });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const draggedElement = document.querySelector('.dragging');
+                if (draggedElement) zone.appendChild(draggedElement);
+            });
+        });
+
+        function checkBalance() {
+            // Count items based on their strict data-type vs where they are
+            let cZone = document.getElementById('schale-cause');
+            let eZone = document.getElementById('schale-effect');
+            
+            let causeErrors = 0; let effectErrors = 0;
+            let causeCorrect = 0; let effectCorrect = 0;
+
+            Array.from(cZone.children).forEach(child => {
+                if(child.classList.contains('drag-box')) {
+                    if(child.dataset.type === 'cause') causeCorrect++; else causeErrors++;
+                }
+            });
+
+            Array.from(eZone.children).forEach(child => {
+                if(child.classList.contains('drag-box')) {
+                    if(child.dataset.type === 'effect') effectCorrect++; else effectErrors++;
+                }
+            });
+
+            // Calculate Angle: Base is 0 (neutral) or tilted based on item count.
+            let totalLeftWeight = causeCorrect + causeErrors; // Just count items physically for tilt
+            let totalRightWeight = effectCorrect + effectErrors;
+            
+            let diff = totalRightWeight - totalLeftWeight;
+            // Let's make an error on the correct side still add weird weight or just tilt it weirdly
+            // simpler physical tilt:
+            let angle = diff * 15; // 1 item diff = 15 deg tilt
+            
+            // Random chaos if they mixed wrong items?
+            if(causeErrors > 0) angle -= 5; 
+            if(effectErrors > 0) angle += 5;
+
+            // Enforce bounds
+            if(angle > 30) angle = 30;
+            if(angle < -30) angle = -30;
+
+            arm.style.transform = `rotate(${angle}deg)`;
+
+            // Victory
+            if (causeCorrect === 2 && effectCorrect === 2 && causeErrors === 0 && effectErrors === 0) {
+                setTimeout(() => {
+                    formelResult.classList.remove('hidden');
+                    // Trigger reflow to start CSS transition
+                    void formelResult.offsetWidth; 
+                    formelResult.classList.add('active');
+                    
+                    // Lock drag
+                    draggables.forEach(d => d.setAttribute('draggable', 'false'));
+                }, 600);
+            } else {
+                formelResult.classList.add('hidden');
+                formelResult.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

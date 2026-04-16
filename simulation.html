@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physik 8: Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="nav-header" style="position: relative;">
+        <a href="ABGeschwindigkeitsänderunginteraktiv.html" class="btn btn-outline" style="position: absolute; left: 15px; top: 15px; padding: 0.4rem 0.8rem; font-size: 0.9rem;">⬅ Zurück</a>
+        <h1>Die Kraft - Mission 2</h1>
+        <div class="progress-pills">
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill"></div>
+            <div class="pill"></div>
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="glass-panel">
+            <h2>Das interaktive Labor</h2>
+            <p>Du hast erkannt, dass von außen "eingewirkt" werden muss. Teste nun die Zusammenhänge im Simulator!</p>
+            
+            <!-- Freeplay info -->
+            <div id="sim-freeplay-box" class="challenge-box">
+                <h3>🧪 Freies Experimentieren</h3>
+                <p>Spiele völlig frei mit den Reglern. Beobachte genau, wie lange der "Schubser" rennt, wie das Gewicht wirkt und wie schnell der Schlitten am Ende ist!</p>
+                <p style="font-weight:bold; color:var(--accent-cyan); margin-top:0.5rem;" id="freeplay-counter">Noch 3 freie Versuche nötig...</p>
+            </div>
+
+            <!-- Challenge Box (Hidden initially) -->
+            <div id="sim-challenge-box" class="challenge-box pulse hidden">
+                <h3 id="ch-title">🎯 Labor-Challenge 1: Maximaler Speed!</h3>
+                <p id="ch-desc">Stelle die Regler so ein, dass der Schlitten nach dem Anschubsen so schnell wie möglich rutscht!</p>
+            </div>
+
+            <div class="lab-container mt-2">
+                <div class="controls">
+                    <div class="slider-group">
+                        <label for="sim-mass">🛷 Personen (= Masse \(m\))</label>
+                        <input type="range" id="sim-mass" min="1" max="3" value="1">
+                        <span class="val-display" id="val-sim-mass">1 Person</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="sim-force">💪 Schubkraft (= Kraft \(F\))</label>
+                        <input type="range" id="sim-force" min="1" max="5" value="3">
+                        <span class="val-display" id="val-sim-force">Mittel</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="sim-time">⏱️ Schubdauer (= Zeit \(\Delta t\))</label>
+                        <input type="range" id="sim-time" min="1" max="5" value="3">
+                        <span class="val-display" id="val-sim-time">Mittel</span>
+                    </div>
+                    <button class="btn btn-outline" id="btn-sim-start">▶ Animation Starten</button>
+                    <div id="sim-error-msg" class="text-error hidden mt-1" style="font-weight: 600;"></div>
+                </div>
+
+                <div class="sim-view" id="sim-view">
+                    <!-- HUD für exakte Werte -->
+                    <div id="sim-hud" style="position:absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; padding: 10px 15px; border-radius: 8px; font-size: 1.1rem; font-family: monospace; z-index:10; border: 1px solid var(--accent-cyan);">
+                        <div>⏱️ Zeit : <span id="hud-t" style="color:var(--accent-cyan);font-weight:bold;">0.00 s</span></div>
+                        <div>💪 Kraft: <span id="hud-f" style="color:var(--accent-cyan);font-weight:bold;">0 N</span></div>
+                        <div>🚀 Tempo: <span id="hud-v" style="color:var(--accent-cyan);font-weight:bold;">0.00 m/s</span></div>
+                    </div>
+
+                    <!-- Snow track -->
+                    <div class="track"></div>
+
+                    <!-- Blitzer / Speed Camera -->
+                    <div id="blitzer" style="position:absolute; bottom: 25px; right: 20px; z-index: 3;">
+                        <!-- Typisch Deutscher Blitzer (Graue Säule mit schwarzen Fenstern) -->
+                        <svg width="30" height="70" viewBox="0 0 30 70">
+                            <!-- Säule -->
+                            <rect x="5" y="0" width="20" height="70" fill="#94a3b8" rx="3"/>
+                            <!-- Rillen/Segmente -->
+                            <line x1="5" y1="20" x2="25" y2="20" stroke="#64748b" stroke-width="2"/>
+                            <line x1="5" y1="40" x2="25" y2="40" stroke="#64748b" stroke-width="2"/>
+                            <!-- Kameralinse / Blitz (Oben) -->
+                            <rect x="7" y="5" width="16" height="10" fill="#1e293b" rx="2"/>
+                            <circle cx="15" cy="10" r="3" fill="#ef4444" id="blitzer-lens"/>
+                            <!-- Messeinheit (Unten) -->
+                            <rect x="7" y="25" width="16" height="10" fill="#1e293b" rx="2"/>
+                            <circle cx="15" cy="30" r="3" fill="#334155"/>
+                        </svg>
+                        <div id="blitzer-text" class="hidden pulse" style="position:absolute; top:-35px; right:0px; background:rgba(0,0,0,0.8); color:#facc15; padding: 4px 10px; border-radius:6px; font-weight:bold; white-space:nowrap; font-size: 1rem; border: 2px solid #ef4444; z-index: 5;">Δv = 0.00 m/s</div>
+                    </div>
+                    <!-- Blitz Effekt -->
+                    <div id="blitzer-flash" style="position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 80%); z-index:99; opacity:0; pointer-events:none; transition: opacity 0.1s;"></div>
+
+                    <!-- Pusher Character -->
+                    <div class="pusher-object" id="anim-pusher">
+                        <svg width="40" height="60" viewBox="0 0 40 60">
+                            <!-- Head -->
+                            <circle cx="20" cy="15" r="8" fill="#e11d48"/>
+                            <!-- Body -->
+                            <line x1="20" y1="23" x2="20" y2="40" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>
+                            <!-- Arms (reaching forward and touching sled) -->
+                            <line id="pusher-arms" x1="20" y1="28" x2="45" y2="40" stroke="#e11d48" stroke-width="4" stroke-linecap="round" style="transition: all 0.15s;"/>
+                            <!-- Hand Grip overlay (sichtbarer Kontakt) -->
+                            <circle id="pusher-hands" cx="45" cy="40" r="3" fill="#e11d48" style="transition: all 0.15s;"/>
+                            <!-- Legs -->
+                            <line x1="20" y1="40" x2="10" y2="55" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="20" y1="40" x2="30" y2="55" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <!-- Sled Character -->
+                    <div class="sled-object" id="anim-sled">
+                        <!-- Wind lines -->
+                        <svg class="wind-lines" id="wind" width="100" height="60" viewBox="0 0 100 60">
+                            <line x1="-20" y1="20" x2="-60" y2="20" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="-10" y1="35" x2="-40" y2="35" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="-15" y1="10" x2="-35" y2="10" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <svg width="100" height="60" viewBox="0 0 100 60">
+                            <path d="M10 50 L 80 50 Q 90 50 90 40" fill="none" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+                            <rect x="25" y="40" width="6" height="10" fill="#3b82f6"/>
+                            <rect x="65" y="40" width="6" height="10" fill="#3b82f6"/>
+                            <rect x="15" y="30" width="65" height="10" fill="#e11d48" rx="3"/>
+                            <g id="passengers"></g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conclusion Box after Challenge 2 -->
+            <div class="mt-2 hidden" id="sim-conclusion">
+                <h3>Hervorragend analysiert!</h3>
+                <p>Nachdem du Max/Min-Speed gemeistert hast, fülle den Forscher-Befund aus:</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; line-height: 1.8;" class="mt-1">
+                    <p>
+                        <strong>1. Was ist "Einwirkung"?</strong><br>
+                        Unter einer Einwirkung versteht man in der Physik im Grunde zwei Größen: Man benötigt eine 
+                        <select id="sel-var-f"><option value="">...</option><option value="kraft">Kraft (F)</option><option value="masse">Masse (m)</option></select>
+                        die über eine bestimmte 
+                        <select id="sel-var-t"><option value="">...</option><option value="dauer">Einwirkungsdauer (Δt)</option><option value="geschwindigkeit">Geschwindigkeitsänderung</option></select>
+                        lang anhält. <br>
+                        ➔ Je <em>größer</em> die Kraft oder je <em>länger</em> die Dauer, desto größer ist die am Ende erreichte 
+                        <select id="sel-var-v"><option value="">...</option><option value="geschwindigkeit">Geschwindigkeitsänderung (Δv)</option><option value="masse">Masse</option></select>.<br><br>
+
+                        <strong>2. Die Trägheit:</strong><br>
+                        Und was passiert, wenn die Einwirkung <em>genau gleich bleibt</em> (also gleiche Kraft und gleiche Zeit)? 
+                        Dann entscheidet der Körper selbst! Ein schwerer Körper besitzt naturgemäß mehr 
+                        <select id="sel-var-m"><option value="">...</option><option value="kraft">Kraft</option><option value="masse">Masse (m)</option></select>. 
+                        Man nennt ihn in diesem Fall "träger". Bei *gleicher Einwirkung* beschleunigt er weitaus weniger als leichte Objekte.
+                    </p>
+                </div>
+                <div id="feedback" class="feedback-msg hidden mt-1"></div>
+                <button class="btn mt-1" id="btn-check-s2">Bestätigen</button>
+                <a href="hefteintrag.html" class="btn btn-outline mt-1 hidden" id="btn-next">Weiter zum Hefteintrag ➔</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        let mode = 'freeplay'; // freeplay -> ch1 -> ch2 -> done
+        let freeplaysDone = 0;
+
+        const sM = document.getElementById('sim-mass');
+        const sF = document.getElementById('sim-force');
+        const sT = document.getElementById('sim-time');
+        const animSled = document.getElementById('anim-sled');
+        const animPusher = document.getElementById('anim-pusher');
+        const pusherArms = document.getElementById('pusher-arms');
+        const wind = document.getElementById('wind');
+        const btnSimStart = document.getElementById('btn-sim-start');
+        const errorMsg = document.getElementById('sim-error-msg');
+        
+        const updatePassengerVisual = () => {
+            let m = parseInt(sM.value);
+            document.getElementById('val-sim-mass').textContent = (m * 50) + " kg";
+            let innerSVG = '';
+            for(let i=0; i<m; i++) {
+                let offset = 25 * i;
+                innerSVG += `<circle cx="${35+offset}" cy="15" r="8" fill="#1e293b" />
+                             <rect x="${31+offset}" y="25" width="8" height="15" fill="#1e293b" />`;
+            }
+            document.getElementById('passengers').innerHTML = innerSVG;
+        };
+
+        const updateSliders = () => {
+            document.getElementById('val-sim-force').textContent = (sF.value * 20) + " N";
+            document.getElementById('val-sim-time').textContent = ((sT.value * 0.5) + 0.5) + " s";
+        };
+
+        sM.addEventListener('input', updatePassengerVisual);
+        sF.addEventListener('input', updateSliders);
+        sT.addEventListener('input', updateSliders);
+        updatePassengerVisual();
+
+        btnSimStart.addEventListener('click', () => {
+            let m = parseInt(sM.value);
+            let F = parseInt(sF.value);
+            let t = parseInt(sT.value);
+            
+            // Check Challenge conditions
+            if(mode === 'ch1') {
+                if(!(F === 5 && t === 5 && m === 1)) {
+                    errorMsg.innerHTML = "Nicht maximal! Wenig Trägheit (wenig Personen), viel Kraft und langes Schieben bedeutet maximaler Speed.";
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+            } else if (mode === 'ch2') {
+                if(!(F === 1 && t === 1 && m === 3)) {
+                    errorMsg.innerHTML = "Noch zu schnell! Um ganz langsam zu sein, brauchst du viel Trägheit (viele Personen), sehr wenig Kraft und sehr wenig Dauer.";
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+            }
+            errorMsg.classList.add('hidden');
+            btnSimStart.disabled = true;
+
+            // Physikalische Werte berechnen (Skalierung angepasst)
+            let m_kg = m * 50; // z.B. 50kg, 100kg, 150kg
+            let F_N = F * 20; // z.B. 20N bis 100N
+            let target_time_ms = (t * 0.5 + 0.5) * 1000; // 1s bis 3s
+
+            // Reset Animation Status
+            animSled.style.transform = `translateX(0px)`;
+            animPusher.style.transform = `translateX(0px)`;
+            pusherArms.setAttribute('x2', '45'); // Grabbing sledge board
+            pusherArms.setAttribute('y2', '40');
+            document.getElementById('pusher-hands').setAttribute('cx', '45'); // Grabbing
+            document.getElementById('pusher-hands').setAttribute('cy', '40');
+            wind.className = "wind-lines"; 
+            
+            let posSled = 0;
+            let v_real = 0; // Wahres Tempo m/s
+            let startTime = null;
+            let lastTime = null;
+            let pushingEnded = false;
+            let blitzerFired = false;
+            let v_screen = 0; // Tempo auf dem Bildschirm Pixel/s
+            let trackWidth = document.getElementById('sim-view').clientWidth; // Dynamische Fensterbreite!
+
+            const simLoop = (timestamp) => {
+                if (!startTime) { startTime = timestamp; lastTime = timestamp; }
+                let elapsedMs = timestamp - startTime;
+                let dt = (timestamp - lastTime) / 1000; // Sekunden seit letztem Frame
+                lastTime = timestamp;
+                if(dt > 0.1) dt = 0.016; // Fix falls Tab im Hintergrund
+                
+                // PHASE 1: Einwirken (Beschleunigung)
+                if (elapsedMs <= target_time_ms) {
+                    let a_real = F_N / m_kg; // a = F/m (in m/s^2)
+                    v_real += a_real * dt; 
+                    v_screen = v_real * 15; // Zoom-Faktor für den Screen (1m = 15px)
+                    posSled += v_screen * dt;
+                    animPusher.style.transform = `translateX(${posSled}px)`; // Schubser bleibt am Schlitten
+                } 
+                // PHASE 2: Reibungsfreies Gleiten (Trägheit)
+                else {
+                    if(!pushingEnded) {
+                        pushingEnded = true;
+                        pusherArms.setAttribute('x2', '20'); // Arm schnellt zurück ans Männchen!
+                        pusherArms.setAttribute('y2', '45');
+                        document.getElementById('pusher-hands').setAttribute('cx', '20');
+                        document.getElementById('pusher-hands').setAttribute('cy', '45');
+                        
+                        // Aktiviere Speedlines, wenn das Tempo hoch genug ist
+                        if(v_real > 10) wind.classList.add("wind-fast");
+                        else if (v_real > 4) wind.classList.add("wind-slow");
+                    }
+                    // Konstant weiter rollen! Kein Stop mehr.
+                    posSled += v_screen * dt;
+                }
+
+                // Bilde ab
+                animSled.style.transform = `translateX(${posSled}px)`;
+
+                // Blitzer auslösen (Blitzer steht am rechten Rand, Schlitten berührt ihn)
+                // Die Spitze des Schlittens ist bei left: 80px + posSled + 100px (Länge) = posSled + 180
+                let blitzerTriggerX = trackWidth - 30; // 30px vom rechten Rand entfernt
+                if (!blitzerFired && (posSled + 140) >= blitzerTriggerX) {
+                    blitzerFired = true;
+                    // Blitz nur, wenn es ein "Verstoß" ist (Schnell genug, z.B. ab 3.0 m/s)
+                    if(v_real >= 3.0) {
+                        document.getElementById('blitzer-flash').style.opacity = '1';
+                        setTimeout(() => document.getElementById('blitzer-flash').style.opacity = '0', 100);
+                    }
+                    // Speed-Anzeige kommt immer!
+                    const bt = document.getElementById('blitzer-text');
+                    bt.innerText = `Δv = ${v_real.toFixed(2)} m/s`;
+                    bt.classList.remove('hidden');
+                }
+
+                // Aktualisiere das Live-HUD!
+                document.getElementById('hud-t').innerText = (elapsedMs/1000).toFixed(2) + " s";
+                document.getElementById('hud-f').innerText = pushingEnded ? "0 N (Kein Kontakt)" : (F_N + " N");
+                document.getElementById('hud-v').innerText = v_real.toFixed(2) + " m/s";
+
+                // Beende wenn der Schlitten das Spielfeld/die Box definitiv verlassen hat ODER 10 Sekunden Maximum erreicht sind -> Timeout Guard!
+                if (posSled < (trackWidth - 80) && elapsedMs < 10000) {
+                    requestAnimationFrame(simLoop);
+                } else {
+                    wind.className = "wind-lines";
+                    btnSimStart.disabled = false;
+                    
+                    // Nächste Stufe freischalten
+                    if(mode === 'freeplay') {
+                        freeplaysDone++;
+                        if(freeplaysDone < 3) {
+                            document.getElementById('freeplay-counter').textContent = `Noch ${3 - freeplaysDone} freie Versuche nötig...`;
+                        } else {
+                            mode = 'ch1';
+                            document.getElementById('sim-freeplay-box').classList.add('hidden');
+                            document.getElementById('sim-challenge-box').classList.remove('hidden');
+                        }
+                    } else if(mode === 'ch1') {
+                        mode = 'ch2';
+                        document.getElementById('ch-title').innerHTML = "🎯 Labor-Challenge 2: Minimaler Speed!";
+                        document.getElementById('ch-desc').innerHTML = "Das war zu schnell! Stelle die Regler um auf <strong>minimale Geschwindigkeitsänderung</strong> (er soll kaum losrollen).";
+                    } else if(mode === 'ch2') {
+                        mode = 'done';
+                        document.getElementById('sim-challenge-box').classList.add('hidden');
+                        document.getElementById('sim-conclusion').classList.remove('hidden');
+                    }
+                    
+                    // Aufräumen für den nächsten Lauf
+                    setTimeout(() => {
+                        document.getElementById('blitzer-text').classList.add('hidden');
+                        blitzerFired = false; 
+                    }, 2000);
+                }
+            };
+            
+            // Loop starten
+            requestAnimationFrame(simLoop);
+        });
+
+        // Conclusion Check
+        document.getElementById('btn-check-s2').addEventListener('click', () => {
+            let vM = document.getElementById('sel-var-m').value;
+            let vV = document.getElementById('sel-var-v').value;
+            let vF = document.getElementById('sel-var-f').value;
+            let vT = document.getElementById('sel-var-t').value;
+            const fb = document.getElementById('feedback');
+
+            if(vM === 'masse' && vV === 'geschwindigkeit' && vF === 'kraft' && vT === 'dauer') {
+                fb.innerHTML = "Wunderbar kombiniert! Lass uns das im Heft festhalten.";
+                fb.className = "feedback-msg success";
+                document.getElementById('btn-check-s2').classList.add('hidden');
+                document.getElementById('btn-next').classList.remove('hidden');
+            } else {
+                fb.innerHTML = "Prüfe deine Zuordnung noch einmal! Schwer = viel Masse, Stark beschleunigt = viel Geschwindigkeitsänderung.";
+                fb.className = "feedback-msg error";
+            }
+            fb.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

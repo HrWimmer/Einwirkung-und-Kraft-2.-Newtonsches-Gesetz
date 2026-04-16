@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entdeckung der Formel: F · Δt = m · Δv</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        canvas { background-color: #ffffff; border-radius: 0.5rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+        
+        /* Drag & Drop für Formelbaukasten */
+        .drag-item { cursor: grab; background: white; border: 2px solid #cbd5e1; border-radius: 0.5rem; padding: 0.5rem 1rem; margin: 0.25rem; font-weight: bold; font-size: 1.25rem; color: #1e293b; user-select: none; transition: transform 0.1s, box-shadow 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-block;}
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); box-shadow: none; }
+        
+        .eq-drop-zone { display: inline-block; width: 60px; height: 50px; border: 3px dashed #94a3b8; border-radius: 0.5rem; vertical-align: middle; background-color: #f1f5f9; text-align: center; font-weight: bold; font-size: 1.25rem; color: #0f172a; transition: all 0.2s; line-height: 44px;}
+        .eq-drop-zone.drag-over { background-color: #dbeafe; border-color: #3b82f6; transform: scale(1.05); }
+        .eq-drop-zone.filled { border-style: solid; border-color: #10b981; background-color: #d1fae5; color: #047857; }
+        
+        /* Tabellen Inputs */
+        .calc-input { width: 80px; text-align: center; font-weight: bold; border: 2px solid #cbd5e1; border-radius: 0.25rem; padding: 0.25rem; transition: all 0.3s; outline: none; }
+        .calc-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        .calc-input.correct { border-color: #10b981; background-color: #d1fae5; color: #047857; }
+        .calc-input.wrong { border-color: #ef4444; background-color: #fee2e2; color: #b91c1c; }
+
+        .hidden-content { display: none; }
+        .visible-content { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Animation für den Zurücksetzen-Button nach der Messung */
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .btn-attention {
+            background-color: #f59e0b !important; /* Orange */
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5) !important;
+            animation: gentle-bounce 1.5s infinite;
+            color: white !important;
+        }
+        .btn-attention:hover {
+            background-color: #d97706 !important;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white text-center relative">
+            <a href="uebungen.html" class="absolute left-4 top-4 border-2 border-white text-white font-bold py-2 px-4 rounded-xl hover:bg-white hover:text-blue-700 transition-all">⬅ Zurück</a>
+            <span class="bg-blue-900/50 text-blue-100 px-3 py-1 rounded-full text-sm font-bold tracking-wider uppercase mb-4 inline-block">Virtuelles Labor</span>
+            <h1 class="text-3xl md:text-4xl font-extrabold mb-3">Das 2. Newtonsche Gesetz</h1>
+            <p class="text-blue-100 text-lg max-w-3xl mx-auto">Wie lautet die exakte mathematische Formel, um die Geschwindigkeitsänderung eines fahrenden (oder stehenden) Wagens zu berechnen? Finde es hier heraus!</p>
+        </div>
+
+        <!-- HAUPTBEREICH: SIMULATION & LABORHEFT -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-0 border-b border-slate-200">
+            
+            <!-- Linke Spalte: Simulation -->
+            <div class="p-6 lg:p-8 bg-slate-50 border-r border-slate-200 flex flex-col">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span>⛵</span> Experimentier-Segelwagen
+                </h2>
+                
+                <!-- Canvas Container -->
+                <div class="relative w-full overflow-hidden rounded-xl border-2 border-slate-300 shadow-sm mb-6 bg-white">
+                    <!-- HUD Overlay -->
+                    <div class="absolute top-3 left-3 bg-white/90 p-3 rounded-lg border border-slate-200 shadow-sm text-sm font-mono z-10">
+                        <div class="text-slate-500 mb-1">Live-Daten:</div>
+                        <div class="font-bold text-blue-700">Einwirkzeit \(\Delta t\): <span id="hud-time">0.0</span> s</div>
+                        <div class="font-bold text-red-600">Geschw. v: <span id="hud-vel">0.0</span> m/s</div>
+                        <div id="hud-thrust" class="font-bold text-sky-500 mt-1 hidden">🌬️ Wind wirkt ein!</div>
+                        <div id="hud-preroll" class="font-bold text-slate-500 mt-1 hidden">↳ Wagen rollt...</div>
+                    </div>
+
+                    <canvas id="simCanvas" width="800" height="300" class="w-full h-auto block"></canvas>
+                </div>
+
+                <!-- Controls -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-600 mb-1" title="Startgeschwindigkeit">Start (\(v_A\))</label>
+                        <select id="ctrl-vA" class="w-full p-2 border-2 border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 font-semibold text-slate-700">
+                            <option value="0">0 m/s (Steht)</option>
+                            <option value="1">1 m/s (Rollt)</option>
+                            <option value="2">2 m/s (Schnell)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">Masse (\(m\))</label>
+                        <select id="ctrl-mass" class="w-full p-2 border-2 border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 font-semibold text-slate-700">
+                            <option value="1">1 kg (Leicht)</option>
+                            <option value="2">2 kg (Mittel)</option>
+                            <option value="4">4 kg (Schwer)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">Windkraft (\(F\))</label>
+                        <select id="ctrl-force" class="w-full p-2 border-2 border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 font-semibold text-slate-700">
+                            <option value="1">1 N (Schwach)</option>
+                            <option value="2">2 N (Mittel)</option>
+                            <option value="4">4 N (Sturm)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">Dauer (\(\Delta t\))</label>
+                        <select id="ctrl-duration" class="w-full p-2 border-2 border-slate-200 rounded-lg bg-slate-50 focus:ring-blue-500 focus:border-blue-500 font-semibold text-slate-700">
+                            <option value="1">1 s</option>
+                            <option value="2">2 s</option>
+                            <option value="3">3 s</option>
+                            <option value="4">4 s</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-auto">
+                    <button id="btn-start" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-md transition-all text-lg flex justify-center items-center gap-2">
+                        ▶ Messung starten
+                    </button>
+                    <button id="btn-reset" class="flex-1 bg-slate-400 hover:bg-slate-500 text-white font-bold py-4 px-6 rounded-xl shadow-md transition-all text-lg">
+                        Zurücksetzen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rechte Spalte: Laborheft (Tabelle) -->
+            <div class="p-6 lg:p-8 bg-white flex flex-col">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span>📋</span> Dein Laborheft
+                </h2>
+                
+                <!-- Arbeitsauftrag -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r-xl shadow-sm">
+                    <h3 class="font-bold text-yellow-800 text-lg mb-1">Arbeitsauftrag:</h3>
+                    <ul class="list-disc list-inside text-yellow-900 text-sm space-y-1">
+                        <li>Verändere die Parameter und führe Versuche durch.</li>
+                        <li>Berechne jeweils die Werte für die beiden lilafarbenen Spalten und drücke <strong>Enter</strong>.</li>
+                        <li><strong>WICHTIG:</strong> Finde durch Probieren <strong>3 verschiedene Ergebnisse</strong> für die Produkte heraus!</li>
+                    </ul>
+                </div>
+
+                <!-- Fortschrittsanzeige -->
+                <div class="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center shadow-inner">
+                    <span class="font-bold text-blue-800 text-sm">Unterschiedliche Ergebnisse gefunden:</span>
+                    <span class="text-xl font-extrabold text-blue-600"><span id="unique-count">0</span> / 3</span>
+                </div>
+
+                <div class="overflow-x-auto bg-slate-50 rounded-xl border border-slate-200 shadow-inner flex-grow min-h-[250px]">
+                    <table class="w-full text-left text-sm" id="data-table">
+                        <thead class="bg-slate-200/60 text-slate-700 border-b border-slate-300">
+                            <tr>
+                                <th class="p-2 text-center">Nr.</th>
+                                <th class="p-2 text-center">\(m\) [kg]</th>
+                                <th class="p-2 text-center">\(F\) [N]</th>
+                                <th class="p-2 text-center">\(\Delta t\) [s]</th>
+                                <th class="p-2 text-center bg-blue-100/50" title="Startgeschwindigkeit">\(v_A\)</th>
+                                <th class="p-2 text-center bg-blue-100/50" title="Änderung der Geschwindigkeit">\(\Delta v\)</th>
+                                <!-- Die zu berechnenden Spalten -->
+                                <th class="p-2 text-center bg-indigo-100/50 border-l border-slate-300 text-indigo-900">Rechne:<br>\(F \cdot \Delta t\)</th>
+                                <th class="p-2 text-center bg-indigo-100/50 text-indigo-900">Rechne:<br>\(m \cdot \Delta v\)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-200">
+                            <!-- Rows generated by JS -->
+                            <tr id="empty-row" class="text-slate-400 italic">
+                                <td colspan="8" class="p-6 text-center">Noch keine Messwerte vorhanden. Starte einen Versuch!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Alert Box, wenn sie das Geheimnis entdecken sollen -->
+                <div id="discovery-alert" class="mt-6 bg-indigo-50 border-2 border-indigo-200 rounded-xl p-5 shadow-sm hidden-content">
+                    <h3 class="font-bold text-indigo-900 text-lg mb-2">💡 Fällt dir etwas auf?</h3>
+                    <p class="text-indigo-800 text-sm">
+                        Klasse! Du hast 3 verschiedene Ergebnisse gefunden. Vergleiche nun die Werte in den letzten beiden Spalten (\(F \cdot \Delta t\) und \(m \cdot \Delta v\)). Was stellst du fest?
+                    </p>
+                    <button id="btn-reveal-formula" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors text-md w-full">
+                        Ich habe eine Regel entdeckt! ➔ Weiter zur Formel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- UNTERER BEREICH: FORMEL-BAUKASTEN (Wird erst später eingeblendet) -->
+        <div id="formula-section" class="p-6 lg:p-10 bg-indigo-50 hidden-content">
+            <h2 class="text-3xl font-extrabold text-indigo-900 mb-4 text-center">
+                Der Formel-Baukasten
+            </h2>
+            <p class="text-center text-indigo-700 mb-8 max-w-2xl mx-auto text-lg">
+                Genau! Deine Berechnungen zeigen: Die Werte in beiden Spalten sind bei jedem Versuch <strong>immer exakt gleich groß</strong>. Deshalb können wir sie mit einem Gleichheitszeichen verbinden. Baue die Formel zusammen, indem du die <strong>richtigen vier</strong> Bausteine in die Lücken ziehst:
+            </p>
+
+            <div class="flex flex-col items-center gap-8">
+                
+                <!-- Bausteine zum Ziehen (mit Distraktoren) -->
+                <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm flex flex-wrap justify-center gap-3" id="formula-pool">
+                    <div class="drag-item" draggable="true" data-var="F">\(F\)</div>
+                    <div class="drag-item" draggable="true" data-var="m">\(m\)</div>
+                    <div class="drag-item" draggable="true" data-var="dt">\(\Delta t\)</div>
+                    <div class="drag-item" draggable="true" data-var="dv">\(\Delta v\)</div>
+                    <!-- Distraktoren -->
+                    <div class="drag-item border-slate-300 text-slate-500" draggable="true" data-var="vA">\(v_A\)</div>
+                    <div class="drag-item border-slate-300 text-slate-500" draggable="true" data-var="vE">\(v_E\)</div>
+                    <div class="drag-item border-slate-300 text-slate-500" draggable="true" data-var="a">\(a\)</div>
+                    <div class="drag-item border-slate-300 text-slate-500" draggable="true" data-var="s">\(s\)</div>
+                </div>
+
+                <!-- Die Gleichung mit Drop-Zones -->
+                <div class="bg-white px-8 py-6 rounded-2xl border-2 border-indigo-300 shadow-lg flex items-center justify-center gap-4 text-3xl font-bold text-slate-800 flex-wrap">
+                    <span class="eq-drop-zone" data-slot="left1"></span>
+                    <span class="text-indigo-400 mx-1">&middot;</span>
+                    <span class="eq-drop-zone" data-slot="left2"></span>
+                    
+                    <span class="mx-4 text-4xl text-blue-600">=</span>
+                    
+                    <span class="eq-drop-zone" data-slot="right1"></span>
+                    <span class="text-indigo-400 mx-1">&middot;</span>
+                    <span class="eq-drop-zone" data-slot="right2"></span>
+                </div>
+
+                <div id="formula-success" class="hidden-content text-center w-full">
+                    <div class="bg-green-100 border-2 border-green-500 text-green-800 p-6 rounded-xl shadow-md max-w-3xl mx-auto">
+                        <h3 class="text-2xl font-bold mb-2 flex justify-center items-center gap-2"><span>🎉</span> Perfekt! Das 2. Newtonsche Gesetz!</h3>
+                        <p class="text-lg">
+                            <strong>Kraft &middot; Einwirkungsdauer = Masse &middot; Geschwindigkeitsänderung</strong>
+                        </p>
+                        <p class="mt-3 text-sm text-green-700">
+                            In der Physik nennt man das Produkt \(F \cdot \Delta t\) den <strong>Kraftstoß</strong> und das Produkt \(m \cdot \Delta v\) die <strong>Impulsänderung</strong>. Du hast dir dieses fundamentale Gesetz gerade komplett selbst hergeleitet. Trage die Formel nun in dein Arbeitsblatt ein!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- MathJax Initialisierung ---
+        window.addEventListener('load', () => {
+            if(window.MathJax) MathJax.typesetPromise();
+        });
+
+        // --- State Variables ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let lastTime = 0;
+        let frameCount = 0;
+        
+        // Physics variables
+        const startX = 200; // Linie, ab der der Wind bläst
+        let scalePxPerM = 40; 
+        
+        let cart = { x: 50, y: 220, v: 0, vA: 0, m: 1 };
+        let force = 0;
+        let duration = 0;
+        let simTime = 0; // Gemessene Zeit während Einwirkung
+        
+        // State Machine: 'idle', 'preroll', 'thrust', 'postroll'
+        let phase = 'idle'; 
+
+        // Tracking für Fortschritt
+        let runCount = 0;
+
+        // --- Rendering ---
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Sky & Ground
+            ctx.fillStyle = '#f0f9ff';
+            ctx.fillRect(0, 0, canvas.width, 250);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(0, 250, canvas.width, 50);
+            
+            // Track Line
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, 250); ctx.lineTo(canvas.width, 250); ctx.stroke();
+
+            // Distance Markers (relativ zur Startlinie!)
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            for(let m = -5; m <= 30; m += 5) {
+                let px = startX + (m * scalePxPerM);
+                if (px > 0 && px < canvas.width) {
+                    ctx.fillRect(px - 1, 250, 2, 10);
+                    if(m !== 0) ctx.fillText(m + "m", px, 275);
+                }
+            }
+
+            // Start Line (Wind-Start)
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(startX, 100); ctx.lineTo(startX, 250); ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText("Start", startX, 90);
+            ctx.font = '11px sans-serif';
+            ctx.fillText("(Wind bläst ab hier)", startX, 105);
+
+            // Windzone farblich andeuten (solange thrust aktiv)
+            if (phase === 'thrust') {
+                ctx.fillStyle = 'rgba(186, 230, 253, 0.2)'; // Hellblau
+                ctx.fillRect(startX, 0, canvas.width - startX, 250);
+            }
+        }
+
+        function drawCart() {
+            const w = 60;
+            const h = 30;
+            
+            ctx.save();
+            ctx.translate(cart.x, cart.y);
+
+            // Räder
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(10, 30, 8, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(50, 30, 8, 0, Math.PI*2); ctx.fill();
+
+            // Chassis Farbe nach Masse
+            if (cart.m === 1) ctx.fillStyle = '#60a5fa'; 
+            else if (cart.m === 2) ctx.fillStyle = '#3b82f6'; 
+            else ctx.fillStyle = '#1e3a8a'; 
+
+            ctx.beginPath(); ctx.roundRect(0, 0, w, h, 4); ctx.fill();
+            
+            // Massebeschriftung
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(cart.m + " kg", w/2, h/2 + 5);
+
+            // Segelmast
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, -50); ctx.stroke();
+
+            // Segel (bläht sich auf, wenn Wind weht)
+            ctx.fillStyle = (phase === 'thrust') ? '#bae6fd' : '#f1f5f9';
+            ctx.beginPath();
+            if (phase === 'thrust') {
+                // Aufgebläht
+                ctx.moveTo(w/2, -50);
+                ctx.quadraticCurveTo(w/2 + 30, -25, w/2, 0);
+            } else {
+                // Schlaff / Normal
+                ctx.moveTo(w/2, -50);
+                ctx.lineTo(w/2 + 20, 0);
+                ctx.lineTo(w/2, 0);
+            }
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Wind-Animation (Striche)
+            if (phase === 'thrust') {
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+                ctx.lineWidth = 2;
+                for (let i = -1; i <= 1; i++) {
+                    let wave = Math.sin(frameCount * 0.3 + i) * 5;
+                    ctx.beginPath();
+                    ctx.moveTo(-50, -25 + i * 15);
+                    ctx.bezierCurveTo(-30, -25 + i * 15 + wave,
+                                      -10, -25 + i * 15 - wave,
+                                      10, -25 + i * 15);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-time').innerText = simTime.toFixed(1);
+            document.getElementById('hud-vel').innerText = cart.v.toFixed(1);
+            
+            const thrustHud = document.getElementById('hud-thrust');
+            const preHud = document.getElementById('hud-preroll');
+            
+            if (phase === 'preroll') {
+                preHud.classList.remove('hidden');
+                thrustHud.classList.add('hidden');
+            } else if (phase === 'thrust') {
+                preHud.classList.add('hidden');
+                thrustHud.classList.remove('hidden');
+            } else {
+                preHud.classList.add('hidden');
+                thrustHud.classList.add('hidden');
+            }
+        }
+
+        // --- Physics Loop ---
+        function update(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            let dt = (timestamp - lastTime) / 1000; 
+            lastTime = timestamp;
+            frameCount++;
+
+            if (phase !== 'idle') {
+                
+                if (phase === 'preroll') {
+                    cart.x += (cart.v * scalePxPerM) * dt;
+                    if (cart.x >= startX) {
+                        cart.x = startX; // exakt auf Linie setzen
+                        phase = 'thrust';
+                    }
+                } 
+                else if (phase === 'thrust') {
+                    let a = force / cart.m;
+                    cart.v += a * dt;
+                    cart.x += (cart.v * scalePxPerM) * dt;
+                    simTime += dt;
+                    
+                    if (simTime >= duration) {
+                        simTime = duration; // Cappen
+                        phase = 'postroll';
+                        finishRun();
+                    }
+                } 
+                else if (phase === 'postroll') {
+                    cart.x += (cart.v * scalePxPerM) * dt;
+                    if (cart.x > canvas.width + 100) {
+                        phase = 'idle';
+                    }
+                }
+
+                updateHUD();
+            }
+
+            drawGrid();
+            drawCart();
+
+            if(phase !== 'idle') {
+                requestAnimationFrame(update);
+            }
+        }
+
+        // --- Logic & Events ---
+        function resetSim() {
+            phase = 'idle';
+            lastTime = 0;
+            simTime = 0;
+            
+            // Werte aus UI holen
+            cart.vA = parseFloat(document.getElementById('ctrl-vA').value);
+            cart.m = parseInt(document.getElementById('ctrl-mass').value);
+            force = parseInt(document.getElementById('ctrl-force').value);
+            duration = parseInt(document.getElementById('ctrl-duration').value);
+            
+            cart.v = cart.vA; 
+            
+            // Startposition berechnen. Rollt 1,5 Sekunden vor.
+            if (cart.vA > 0) {
+                cart.x = startX - (cart.vA * scalePxPerM * 1.5);
+            } else {
+                cart.x = startX; // Direkt an Startlinie platzieren
+            }
+            
+            updateHUD();
+            
+            const btnStart = document.getElementById('btn-start');
+            btnStart.disabled = false;
+            btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnStart.innerHTML = "▶ Messung starten";
+
+            // Zurücksetzen Button normalisieren
+            const btnReset = document.getElementById('btn-reset');
+            btnReset.classList.remove('btn-attention');
+            btnReset.innerHTML = "Zurücksetzen";
+
+            drawGrid();
+            drawCart();
+        }
+
+        function startSim() {
+            if (phase !== 'idle') return;
+            resetSim(); 
+            
+            const btnStart = document.getElementById('btn-start');
+            btnStart.disabled = true;
+            btnStart.classList.add('opacity-50', 'cursor-not-allowed');
+            btnStart.innerHTML = "Messung läuft...";
+
+            phase = (cart.vA > 0) ? 'preroll' : 'thrust';
+            requestAnimationFrame(update);
+        }
+
+        function finishRun() {
+            runCount++;
+            
+            // Exakte mathematische Berechnung (Vermeidung von JS Gleitkomma-Ungenauigkeiten)
+            let exactDeltaV = (force / cart.m) * duration;
+            
+            addTableRow(runCount, cart.m, force, duration, cart.vA, exactDeltaV);
+            
+            const btnStart = document.getElementById('btn-start');
+            btnStart.innerHTML = "Messung beendet.";
+
+            // Zurücksetzen Button deutlich hervorheben
+            const btnReset = document.getElementById('btn-reset');
+            btnReset.classList.add('btn-attention');
+            btnReset.innerHTML = "↺ Nächste Messung (Zurücksetzen)";
+        }
+
+        function addTableRow(nr, m, F, dt, vA, dv) {
+            const tbody = document.getElementById('table-body');
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) emptyRow.remove();
+
+            const targetForceTime = F * dt;
+            const targetMassVel = m * dv;
+            const cleanDv = Number(dv.toFixed(2));
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-100 transition-colors";
+            tr.innerHTML = `
+                <td class="p-2 text-center border-t border-slate-200 font-bold text-slate-500">${nr}</td>
+                <td class="p-2 text-center border-t border-slate-200">${m}</td>
+                <td class="p-2 text-center border-t border-slate-200">${F}</td>
+                <td class="p-2 text-center border-t border-slate-200">${dt}</td>
+                <td class="p-2 text-center border-t border-slate-200 bg-blue-50 text-blue-700">${vA}</td>
+                <td class="p-2 text-center border-t border-slate-200 bg-blue-50 font-bold text-blue-700">${cleanDv}</td>
+                <td class="p-2 text-center border-t border-l border-slate-200 bg-indigo-50">
+                    <input type="number" step="any" class="calc-input f-dt-input" data-target="${targetForceTime}" placeholder="Enter ⏎" title="Ergebnis eintragen und Enter drücken">
+                </td>
+                <td class="p-2 text-center border-t border-slate-200 bg-indigo-50">
+                    <input type="number" step="any" class="calc-input m-dv-input" data-target="${targetMassVel}" placeholder="Enter ⏎" title="Ergebnis eintragen und Enter drücken">
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            const inputs = tr.querySelectorAll('.calc-input');
+            
+            // Funktion zum Überprüfen der Eingabe
+            function validateInput(input) {
+                let valStr = input.value.replace(',', '.');
+                const val = parseFloat(valStr);
+                const target = parseFloat(input.getAttribute('data-target'));
+                
+                // Wenn das Feld leer ist oder keine gültige Zahl enthält
+                if (isNaN(val)) {
+                    input.classList.remove('wrong', 'correct');
+                    return;
+                }
+                
+                // Toleranzprüfung
+                if (Math.abs(val - target) < 0.01) {
+                    if (!input.classList.contains('correct')) {
+                        input.classList.remove('wrong');
+                        input.classList.add('correct');
+                        input.disabled = true; // Input sperren
+                        checkProgress();
+                    }
+                } else {
+                    input.classList.add('wrong');
+                    input.classList.remove('correct');
+                }
+            }
+
+            inputs.forEach(input => {
+                // Prüfen beim Verlassen des Feldes (Klick irgendwo anders hin)
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+                
+                // Prüfen beim ausdrücklichen Drücken der Enter-Taste
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        validateInput(this);
+                        this.blur(); // Entfernt den Fokus aus dem Feld nach Enter
+                    }
+                });
+            });
+            
+            // Autoscroll
+            const tableContainer = tbody.parentElement.parentElement;
+            tableContainer.scrollTop = tableContainer.scrollHeight;
+        }
+
+        // Diese Funktion prüft, ob mindestens 3 VERSCHIEDENE korrekte Produkte vorliegen
+        function checkProgress() {
+            let uniqueProducts = new Set();
+            
+            const rows = document.querySelectorAll('#table-body tr:not(#empty-row)');
+            rows.forEach(tr => {
+                // Suchen nach Zeilen, in denen BEIDE Inputs grün (correct) sind
+                const correctInputs = tr.querySelectorAll('.calc-input.correct');
+                if (correctInputs.length === 2) {
+                    let target = parseFloat(correctInputs[0].getAttribute('data-target'));
+                    // Runden auf 2 Nachkommastellen um JS Float-Ungenauigkeiten im Set zu ignorieren
+                    uniqueProducts.add(target.toFixed(2));
+                }
+            });
+
+            const count = uniqueProducts.size;
+            
+            // UI Update
+            const countDisplay = document.getElementById('unique-count');
+            countDisplay.innerText = count;
+            
+            if (count >= 3) {
+                countDisplay.parentElement.classList.add('text-green-600');
+                countDisplay.parentElement.classList.remove('text-blue-600');
+                
+                document.getElementById('discovery-alert').classList.remove('hidden-content');
+                document.getElementById('discovery-alert').classList.add('visible-content');
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('btn-start').addEventListener('click', startSim);
+        document.getElementById('btn-reset').addEventListener('click', resetSim);
+        ['ctrl-vA', 'ctrl-mass', 'ctrl-force', 'ctrl-duration'].forEach(id => {
+            document.getElementById(id).addEventListener('change', resetSim);
+        });
+
+        document.getElementById('btn-reveal-formula').addEventListener('click', () => {
+            document.getElementById('formula-section').classList.remove('hidden-content');
+            document.getElementById('formula-section').classList.add('visible-content');
+            document.getElementById('formula-section').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // --- Formel Baukasten Drag & Drop ---
+        const dragItems = document.querySelectorAll('.drag-item');
+        const dropZones = document.querySelectorAll('.eq-drop-zone');
+        let draggedItem = null;
+
+        dragItems.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                setTimeout(() => item.classList.add('opacity-50'), 0);
+            });
+            item.addEventListener('dragend', () => {
+                setTimeout(() => {
+                    draggedItem.classList.remove('opacity-50');
+                    draggedItem = null;
+                }, 0);
+            });
+        });
+
+        let eqState = { left1: null, left2: null, right1: null, right2: null };
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => { 
+                e.preventDefault(); 
+                if(!zone.classList.contains('filled')) zone.classList.add('drag-over'); 
+            });
+            zone.addEventListener('dragleave', () => { 
+                zone.classList.remove('drag-over'); 
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                if (zone.classList.contains('filled') || !draggedItem) return;
+
+                const slot = zone.getAttribute('data-slot');
+                const varName = draggedItem.getAttribute('data-var');
+                const htmlContent = draggedItem.innerHTML;
+
+                zone.innerHTML = htmlContent;
+                zone.classList.add('filled');
+                eqState[slot] = varName;
+                
+                draggedItem.style.display = 'none';
+                
+                checkEquation();
+            });
+            
+            zone.addEventListener('click', () => {
+                if (zone.classList.contains('filled')) {
+                    const varName = eqState[zone.getAttribute('data-slot')];
+                    const poolItem = document.querySelector(`.drag-item[data-var="${varName}"]`);
+                    poolItem.style.display = 'inline-block';
+                    
+                    zone.innerHTML = '';
+                    zone.classList.remove('filled');
+                    eqState[zone.getAttribute('data-slot')] = null;
+                    
+                    document.getElementById('formula-success').classList.add('hidden-content');
+                    document.getElementById('formula-success').classList.remove('visible-content');
+                }
+            });
+        });
+
+        function checkEquation() {
+            const { left1, left2, right1, right2 } = eqState;
+            if (!left1 || !left2 || !right1 || !right2) return;
+
+            const leftIsKraftstoss = (left1 === 'F' && left2 === 'dt') || (left1 === 'dt' && left2 === 'F');
+            const rightIsImpuls = (right1 === 'm' && right2 === 'dv') || (right1 === 'dv' && right2 === 'm');
+            
+            const leftIsImpuls = (left1 === 'm' && left2 === 'dv') || (left1 === 'dv' && left2 === 'm');
+            const rightIsKraftstoss = (right1 === 'F' && right2 === 'dt') || (right1 === 'dt' && right2 === 'F');
+
+            if ((leftIsKraftstoss && rightIsImpuls) || (leftIsImpuls && rightIsKraftstoss)) {
+                document.getElementById('formula-success').classList.remove('hidden-content');
+                document.getElementById('formula-success').classList.add('visible-content');
+            } else {
+                dropZones.forEach(z => {
+                    const oldBg = z.style.backgroundColor;
+                    const oldB = z.style.borderColor;
+                    z.style.backgroundColor = '#fee2e2';
+                    z.style.borderColor = '#ef4444';
+                    setTimeout(() => {
+                        z.style.backgroundColor = '';
+                        z.style.borderColor = '';
+                    }, 500);
+                });
+            }
+        }
+
+        // Init
+        resetSim();
+
+    </script>
+</body>
+</html>

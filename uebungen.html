@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physik 8: Übungsgelände</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .correction-box { background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--accent-magenta); margin-top: 0.5rem; }
+        .input-correction { width: 100%; padding: 0.5rem; border-radius: 4px; border: none; font-size: 1rem; margin: 0.5rem 0; color: #1e293b; }
+        .heft-alert { background: rgba(16, 185, 129, 0.2); border: 2px dashed var(--success); padding: 1rem; border-radius: 8px; font-weight: bold; }
+        .det-card { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.2rem; }
+        .det-card p { margin: 0 0 0.5rem 0; }
+        .det-hint { font-size: 0.85rem; opacity: 0.7; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 4px; margin-bottom: 0.8rem; }
+        .det-sel { padding: 0.5rem; width: 100%; border-radius: 4px; font-size: 1rem; background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .det-fb { padding: 0.8rem 1rem; border-radius: 6px; font-weight: bold; margin-top: 0.6rem; display: none; }
+        .jd-gen-box { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 1.5rem; font-size: 1.1rem; line-height: 1.9; min-height: 100px; }
+        .jd-ans-btn { padding: 0.7rem 1.5rem; font-size: 1rem; transition: all 0.2s; }
+        .score-badge { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 0.3rem 1rem; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="nav-header" style="position: relative;">
+        <a href="hefteintrag.html" class="btn btn-outline" style="position: absolute; left: 15px; top: 15px; padding: 0.4rem 0.8rem; font-size: 0.9rem;">⬅ Zurück</a>
+        <h1>Die Kraft - Mission 4 (Training)</h1>
+        <div class="progress-pills">
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill active"></div>
+            <div class="pill"></div>
+        </div>
+    </div>
+
+    <main class="container">
+        <header class="text-center mb-1">
+            <h1 class="glitch" data-text="Übungsgelände">Übungsgelände</h1>
+            <p class="subtitle">Wende dein Wissen an und werde zum Mechanik-Profi!</p>
+        </header>
+
+        <div class="heft-alert mt-1 mb-2 pulse text-center" style="border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1);">
+            <h3 style="color: var(--accent-cyan);">📝 Wichtige Aufgaben fürs Heft!</h3>
+            <p>Achtung! Die Level <strong style="font-size: 1.2rem; color: var(--accent-gold);">1</strong>, <strong style="font-size: 1.2rem; color: var(--accent-gold);">2</strong> und <strong style="font-size: 1.2rem; color: var(--accent-gold);">4</strong> musst du zwingend <strong>in deinem Physik-Heft</strong> bearbeiten!</p>
+        </div>
+
+        <!-- ======== LEVEL 1 ======== -->
+        <section class="glass-panel" id="lev1">
+            <h2>Level 1: Finde die Fehler (Buch S.134/11)</h2>
+            <p class="mb-1">Entscheide, ob folgende Aussagen wahr oder falsch sind. Bei falschen Aussagen musst du den korrekten Satz selbst formulieren!</p>
+            <div class="exercise-card">
+                <div class="tf-question">
+                    <p id="tq-1"><strong>a)</strong> Je schwerer der Körper ist, desto größer ist seine Geschwindigkeitsänderung bei gleicher Kraft und Einwirkungsdauer.</p>
+                    <button class="btn btn-outline tf-btn" data-q="1" data-val="wahr">Wahr</button>
+                    <button class="btn btn-outline tf-btn" data-q="1" data-val="falsch">Falsch</button>
+                    <div class="correction-box hidden" id="corr-box-1">
+                        <p>Formuliere den Satz korrekt (Tipp: Das letzte Wort ändern!)</p>
+                        <input type="text" class="input-correction" id="corr-1" placeholder="Je schwerer der Körper ist, desto...">
+                        <button class="btn btn-outline btn-check-corr" data-id="1" data-kws="kleiner,geringer,weniger,sinkt">Prüfen</button>
+                        <span class="fb-corr hidden" style="font-weight:bold; margin-left:1rem;" id="fb-corr-1"></span>
+                    </div>
+                </div>
+
+                <div class="tf-question mt-1">
+                    <p id="tq-2"><strong>b)</strong> Je länger die Einwirkungsdauer einer Kraft auf einen Körper der Masse \(m\) ist, desto größer ist die Geschwindigkeitsänderung, die er erhält.</p>
+                    <button class="btn btn-outline tf-btn" data-q="2" data-val="wahr">Wahr</button>
+                    <button class="btn btn-outline tf-btn" data-q="2" data-val="falsch">Falsch</button>
+                    <div class="feedback-tf hidden mt-1" style="color:var(--success); font-weight:bold;" id="fb-tf-2">✅ Richtig! Längerer Schub (Δt ↑) = mehr Geschwindigkeitsänderung (Δv ↑).</div>
+                </div>
+
+                <div class="tf-question mt-1">
+                    <p id="tq-3"><strong>c)</strong> Je größer die Kraft auf einen Körper der Masse \(m\) ist, desto kürzer muss deren Einwirkungsdauer sein, um die gleiche Geschwindigkeitsänderung zu erreichen.</p>
+                    <button class="btn btn-outline tf-btn" data-q="3" data-val="wahr">Wahr</button>
+                    <button class="btn btn-outline tf-btn" data-q="3" data-val="falsch">Falsch</button>
+                    <div class="feedback-tf hidden mt-1" style="color:var(--success); font-weight:bold;" id="fb-tf-3">✅ Richtig! Wenn du doppelt so stark schiebst, brauchst du nur die halbe Zeit für dasselbe Δv.</div>
+                </div>
+
+                <div class="tf-question mt-1">
+                    <p id="tq-4"><strong>d)</strong> Je länger die Kraft auf einen Körper der Masse \(m\) einwirkt, desto kleiner ist seine Geschwindigkeitsänderung.</p>
+                    <button class="btn btn-outline tf-btn" data-q="4" data-val="wahr">Wahr</button>
+                    <button class="btn btn-outline tf-btn" data-q="4" data-val="falsch">Falsch</button>
+                    <div class="correction-box hidden" id="corr-box-4">
+                        <p>Formuliere den Satz korrekt:</p>
+                        <input type="text" class="input-correction" id="corr-4" placeholder="Je länger die Kraft auf einen Körper einwirkt, desto...">
+                        <button class="btn btn-outline btn-check-corr" data-id="4" data-kws="größer,höher,mehr,steigt,zunimmt">Prüfen</button>
+                        <span class="fb-corr hidden" style="font-weight:bold; margin-left:1rem;" id="fb-corr-4"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="hefteintrag-alert" class="heft-alert hidden mt-2 text-center pulse">
+                <h3>📝 Sehr gut! Ab in dein Physik-Heft!</h3>
+                <p>Notiere dir alle vier korrekten Sätze (a–d) unter der Überschrift <em>"Wichtige Merksätze"</em> in deinem Heft!</p>
+                <button class="btn btn-primary mt-1" onclick="document.getElementById('lev2').scrollIntoView({behavior:'smooth'})">Ich habe die Sätze notiert! ✓</button>
+            </div>
+        </section>
+
+        <!-- ======== LEVEL 2 ======== -->
+        <section class="glass-panel" id="lev2">
+            <h2>Level 2: Sätze bilden (Buch S.125/2)</h2>
+            <p class="mb-1">Wähle klug aus den Menüs, damit am Ende wahre Je-desto-Sätze entstehen!</p>
+            <div class="exercise-card">
+                <div class="jd-builder mt-1">
+                    <span>1. Je</span>
+                    <select class="jd-sel" id="jd1-1" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Kraft (\(F\))</strong>, desto</span>
+                    <select class="jd-sel" id="jd1-2" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Geschwindigkeitsänderung (\(\Delta v\))</strong>.</span>
+                    <span id="fb-jd-1" class="jd-status" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="jd-builder mt-1">
+                    <span>2. Je</span>
+                    <select class="jd-sel" id="jd2-1" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Masse (\(m\))</strong>, desto</span>
+                    <select class="jd-sel" id="jd2-2" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Geschwindigkeitsänderung (\(\Delta v\))</strong>.</span>
+                    <span id="fb-jd-2" class="jd-status" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="jd-builder mt-1">
+                    <span>3. Je</span>
+                    <select class="jd-sel" id="jd3-1" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Einwirkungsdauer (\(\Delta t\))</strong>, desto</span>
+                    <select class="jd-sel" id="jd3-2" style="padding:4px; border-radius:4px;"><option value="">...</option><option value="größer">größer</option><option value="kleiner">kleiner</option></select>
+                    <span>die <strong>Geschwindigkeitsänderung (\(\Delta v\))</strong>.</span>
+                    <span id="fb-jd-3" class="jd-status" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+            </div>
+            <p style="font-size:0.9rem; margin-top:0.5rem; opacity:0.8;">ℹ️ (Die jeweils anderen Größen werden als konstant angesehen.)</p>
+        </section>
+
+        <!-- ======== LEVEL 3 ======== -->
+        <section class="glass-panel">
+            <h2>Level 3: Vektor-Designer</h2>
+            <p>Wir haben 3 <strong>identische Schlitten (je 50 kg)</strong>. Alle werden genau <strong>4 Sekunden lang</strong> angeschoben, aber mit unterschiedlicher Kraft. Ordne den Kraftpfeil \(\vec{F}\) der gemessenen Geschwindigkeit zu!</p>
+            <div class="exercise-card grid-2">
+                <div id="vector-container" style="display:flex; flex-direction:column; gap:1rem;">
+                    <button class="btn btn-outline vector-btn" data-v="1">Kleine Kraft \(\vec{F}\) ➔</button>
+                    <button class="btn btn-outline vector-btn" data-v="2">Mittlere Kraft \(\vec{F}\) ━━━━➔</button>
+                    <button class="btn btn-outline vector-btn" data-v="3">Große Kraft \(\vec{F}\) ━━━━━━━━━━➔</button>
+                </div>
+                <div id="sit-container" style="display:flex; flex-direction:column; gap:1rem;">
+                    <button class="btn btn-outline sit-btn" data-v="2">Blitzer meldet: <strong>5 m/s</strong></button>
+                    <button class="btn btn-outline sit-btn" data-v="3">Blitzer meldet: <strong>12 m/s</strong></button>
+                    <button class="btn btn-outline sit-btn" data-v="1">Blitzer meldet: <strong>2 m/s</strong></button>
+                </div>
+            </div>
+            <div id="fb-vector" class="feedback-msg hidden text-center mt-1"></div>
+        </section>
+
+        <!-- ======== LEVEL 4 ======== -->
+        <section class="glass-panel">
+            <h2>Level 4: Die Mathe-Prophezeiungen</h2>
+            <p>Was passiert mit der Geschwindigkeitsänderung \(\Delta v\)? <em>Achtung: Nur die genannte Größe ändert sich – alle anderen bleiben konstant!</em></p>
+            <div class="exercise-card">
+                <div class="mt-1" style="border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:1rem;">
+                    <p>Wir <strong>verdoppeln die Masse</strong> \(m\) (mehr Personen auf dem Schlitten).<br><small style="opacity:0.7;">Kraft \(F\) und Einwirkungsdauer \(\Delta t\) bleiben gleich.</small></p>
+                    <select class="math-sel" id="ms-1" data-ans="halb"><option value="">Wähle...</option><option value="halb">\(\Delta v\) halbiert sich</option><option value="dopp">\(\Delta v\) verdoppelt sich</option><option value="gleich">\(\Delta v\) bleibt gleich</option></select>
+                    <span class="ms-fb" id="ms-fb-1" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="mt-1" style="border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:1rem;">
+                    <p>Wir <strong>verdoppeln die Einwirkungsdauer</strong> \(\Delta t\) (doppelt so lange schieben).<br><small style="opacity:0.7;">Kraft \(F\) und Masse \(m\) bleiben gleich.</small></p>
+                    <select class="math-sel" id="ms-2" data-ans="dopp"><option value="">Wähle...</option><option value="halb">\(\Delta v\) halbiert sich</option><option value="dopp">\(\Delta v\) verdoppelt sich</option><option value="gleich">\(\Delta v\) bleibt gleich</option></select>
+                    <span class="ms-fb" id="ms-fb-2" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="mt-1" style="border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:1rem;">
+                    <p>Wir <strong>halbieren die Kraft</strong> \(F\) (nur halbe Muskelkraft).<br><small style="opacity:0.7;">Masse \(m\) und Einwirkungsdauer \(\Delta t\) bleiben gleich.</small></p>
+                    <select class="math-sel" id="ms-3" data-ans="halb"><option value="">Wähle...</option><option value="halb">\(\Delta v\) halbiert sich</option><option value="dopp">\(\Delta v\) verdoppelt sich</option><option value="gleich">\(\Delta v\) bleibt gleich</option></select>
+                    <span class="ms-fb" id="ms-fb-3" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="mt-1">
+                    <p>Wir <strong>verdoppeln \(F\) und halbieren \(\Delta t\)</strong> gleichzeitig.<br><small style="opacity:0.7;">Masse \(m\) bleibt gleich. Tipp: Was heben sich auf?</small></p>
+                    <select class="math-sel" id="ms-4" data-ans="gleich"><option value="">Wähle...</option><option value="halb">\(\Delta v\) halbiert sich</option><option value="dopp">\(\Delta v\) verdoppelt sich</option><option value="gleich">\(\Delta v\) bleibt gleich!</option></select>
+                    <span class="ms-fb" id="ms-fb-4" style="margin-left:1rem; font-weight:bold;"></span>
+                </div>
+                <div class="text-center mt-2"><span id="fb-math" class="hidden" style="font-weight:bold; color:var(--success); font-size:1.1rem;">✅ Genial! Du beherrschst die Proportionen der Physik.</span></div>
+            </div>
+        </section>
+
+        <!-- ======== LEVEL 5 ======== -->
+        <section class="glass-panel">
+            <h2>Level 5: Der Physik-Detektiv 🕵️‍♂️</h2>
+            <p>Im Text steht immer, welche zwei Größen bei beiden Personen <strong>identisch</strong> sind. Die dritte, die <em>nicht</em> genannt wird, ist der gesuchte Unterschied! Wähle sie aus – du kannst deine Antwort jederzeit ändern.</p>
+
+            <!-- Fall 1 -->
+            <div class="det-card">
+                <p><strong>Fallakte #001:</strong> Lena und Paul sind Geschwister und wiegen genau gleich viel. Sie haben sich zum Geburtstag identische Schlitten gekauft – <strong>die Gesamtmasse ist bei beiden also gleich groß</strong>. Beide haben im gleichen Sportverein trainiert und können <strong>exakt gleich stark drücken (gleiche Kraft)</strong>. Dennoch blitzt der Radar Lena mit <strong>10 m/s</strong> und Paul mit <strong>4 m/s</strong>. Woran liegt das?</p>
+                <select class="det-sel"
+                    data-correct="t"
+                    data-fb-ok="✅ Richtig! Da Masse und Kraft identisch sind, muss Paul kürzer angeschoben haben (kleineres Δt) – er ist früher losgelassen!"
+                    data-fb-err="❌ Schau nochmal: Masse und Kraft sind ausdrücklich als gleich genannt. Was fehlt?">
+                    <option value="">Wähle die verräterische Variable...</option>
+                    <option value="F">Unterschied in der Kraft (F)</option>
+                    <option value="m">Unterschied in der Masse (m)</option>
+                    <option value="t">Unterschied in der Einwirkungsdauer (Δt)</option>
+                </select>
+                <div class="det-fb"></div>
+            </div>
+
+            <!-- Fall 2 -->
+            <div class="det-card">
+                <p><strong>Fallakte #002:</strong> Anna und Ben nehmen an einem Schlitten-Rennen teil. Sie benutzen <strong>die gleichen Schlitten-Typen, und sitzen selbst auch gleich schwer drauf – Gesamtmasse also identisch</strong>. Ein Schiedsrichter gibt das Startsignal und pfeift exakt zur gleichen Zeit ab, damit <strong>beide die gleiche Einwirkungsdauer haben</strong>. Trotzdem kommt Anna mit <strong>8 m/s</strong> oben an der Blitzerkamera an, Ben nur mit <strong>3 m/s</strong>. Wie ist das möglich?</p>
+                <select class="det-sel"
+                    data-correct="F"
+                    data-fb-ok="✅ Korrekt! Da Masse und Einwirkungsdauer übereinstimmen, muss Anna stärker gedrückt haben (größeres F) – vielleicht hat ihr ein Freund geholfen!"
+                    data-fb-err="❌ Nicht ganz! Masse und Dauer sind explizit als gleich angegeben. Was könnte sonst den Unterschied machen?">
+                    <option value="">Wähle die verräterische Variable...</option>
+                    <option value="F">Unterschied in der Kraft (F)</option>
+                    <option value="m">Unterschied in der Masse (m)</option>
+                    <option value="t">Unterschied in der Einwirkungsdauer (Δt)</option>
+                </select>
+                <div class="det-fb"></div>
+            </div>
+
+            <!-- Fall 3 -->
+            <div class="det-card">
+                <p><strong>Fallakte #003:</strong> Zwei Rennschlitten-Teams trainieren. Der Trainer hat für beide <strong>identische Schlitten bereitgestellt – die Masse ist gleich</strong>. Er ruft laut „Los!“, zählt bis drei und ruft „Stopp!“ – <strong>beide Teams schieben also exakt gleich lange (gleiche Einwirkungsdauer)</strong>. Team A erzielt eine Geschwindigkeitsänderung von <strong>6 m/s</strong>, Team B nur <strong>2 m/s</strong>. Wie kann das sein?</p>
+                <select class="det-sel"
+                    data-correct="m"
+                    data-fb-ok="✅ Perfekt! Gleiche Kraft, gleiche Zeit – Team B's Schlitten ist schwerer (größeres m). Das nennen wir Trägheit!"
+                    data-fb-err="❌ Genau hinschauen: Kraft und Dauer sind beide als gleich bestätigt. Was ist bei Team B's Schlitten anders?">
+                    <option value="">Wähle die verräterische Variable...</option>
+                    <option value="F">Unterschied in der Kraft (F)</option>
+                    <option value="m">Unterschied in der Masse (m)</option>
+                    <option value="t">Unterschied in der Einwirkungsdauer (Δt)</option>
+                </select>
+                <div class="det-fb"></div>
+            </div>
+
+            <!-- Fall 4 -->
+            <div class="det-card">
+                <p><strong>Fallakte #004:</strong> Zwei Astronauten sind auf einer Raumstation. Sie tragen <strong>identische Raumanzüge und wiegen genau gleich viel – Gesamtmasse also gleich</strong>. Beide aktivieren ihre Jetpacks, die technisch überprüft wurden und <strong>exakt die gleiche Schubkraft liefern</strong>. Astronaut X hat nach dem Manöver eine Geschwindigkeitsänderung von <strong>12 m/s</strong> erreicht, Astronaut Y nur <strong>4 m/s</strong>. Was war unterschiedlich?</p>
+                <select class="det-sel"
+                    data-correct="t"
+                    data-fb-ok="✅ Top! Y hat sein Jetpack früher ausgeschaltet (kleineres Δt). Gleiche Kraft, gleiche Masse – die Brenndauer entscheidet!"
+                    data-fb-err="❌ Überlege nochmal: Masse und Kraft sind als gleich gegeben. Was hat Y anders gemacht?">
+                    <option value="">Wähle die verräterische Variable...</option>
+                    <option value="F">Unterschied in der Kraft (F)</option>
+                    <option value="m">Unterschied in der Masse (m)</option>
+                    <option value="t">Unterschied in der Einwirkungsdauer (Δt)</option>
+                </select>
+                <div class="det-fb"></div>
+            </div>
+
+            <!-- Fall 5 -->
+            <div class="det-card">
+                <p><strong>Fallakte #005:</strong> Beim Schul-Sportfest schieben drei Schüler Curling-Steine. Die Steine wurden vom Lehrer bereitgestellt – <strong>alle sind gleich schwer (gleiche Masse)</strong>. Der Lehrer gibt jedem genau <strong>2 Sekunden Zeit zum Schieben – alle schieben also gleich lang (gleiche Einwirkungsdauer)</strong>. Blitzer misst: Schüler A → <strong>4 m/s</strong>, Schüler B → <strong>4 m/s</strong>, Schüler C → <strong>8 m/s</strong>. Wie kommt C auf doppeltes Tempo?</p>
+                <select class="det-sel"
+                    data-correct="F"
+                    data-fb-ok="✅ Ausgezeichnet! C hat doppelt so viel Kraft aufgewendet (z.B. mit Anlauf). Gleiche Masse, gleiche Zeit → doppelte Kraft = doppeltes Δv!"
+                    data-fb-err="❌ Lies nochmal: Masse und Dauer sind für alle drei gleich. Was ist bei C anders als bei A und B?">
+                    <option value="">Wähle die verräterische Variable...</option>
+                    <option value="F">Unterschied in der Kraft (F)</option>
+                    <option value="m">Unterschied in der Masse (m)</option>
+                    <option value="t">Unterschied in der Einwirkungsdauer (Δt)</option>
+                </select>
+                <div class="det-fb"></div>
+            </div>
+        </section>
+
+        <!-- ======== LEVEL 6 ======== -->
+        <section class="glass-panel">
+            <h2>Level 6: Der Je-Desto-Trainer ∞</h2>
+            <p>Unendlich viele Aufgaben! Immer <strong>zwei Größen bleiben konstant</strong> – <strong>eine ändert sich</strong>. Du entscheidest, wie sich die vierte Größe verhält.</p>
+            <div class="exercise-card">
+                <div class="jd-gen-box" id="jd-gen-question">Lade...</div>
+                <div style="display:flex; gap:1rem; margin-top:1.2rem; flex-wrap:wrap;">
+                    <button class="btn btn-outline jd-ans-btn" data-val="größer">Wird größer ↑</button>
+                    <button class="btn btn-outline jd-ans-btn" data-val="kleiner">Wird kleiner ↓</button>
+                </div>
+                <div id="jd-gen-fb" style="padding:0.8rem; border-radius:6px; font-weight:bold; margin-top:1rem; display:none;"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; flex-wrap:wrap; gap:0.5rem;">
+                    <span class="score-badge" id="jd-gen-score">✅ Richtig: 0 &nbsp;|&nbsp; ❌ Falsch: 0</span>
+                    <button class="btn btn-primary" id="jd-gen-next">Nächste Aufgabe ➔</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Formel Link -->
+        <section class="text-center" style="margin:4rem 0;">
+            <div class="pulse pb-box" style="background:rgba(6,182,212,0.1); border:2px solid var(--accent-cyan); padding:2rem; border-radius:12px;">
+                <h2>🎉 Alle Übungen bestanden!</h2>
+                <p>Du bist bereit für das Finale! Lass uns nun die offizielle Physik-Gleichung herleiten!</p>
+                <a href="Newton2Herleitung.html" class="btn btn-primary mt-1" style="font-size:1.2rem; display:inline-block; text-decoration:none;">Das Labor zur Beweisführung betreten ➔</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+    // ========== LEVEL 1 ==========
+    const ansTF = { 1:'falsch', 2:'wahr', 3:'wahr', 4:'falsch' };
+    let pointsL1 = 0;
+    const checkAllL1Done = () => { if(pointsL1 >= 4) document.getElementById('hefteintrag-alert').classList.remove('hidden'); };
+
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const q = this.dataset.q;
+            const val = this.dataset.val;
+            this.parentElement.querySelectorAll('.tf-btn').forEach(b => b.disabled = true);
+            if(ansTF[q] === val) {
+                this.style.backgroundColor = 'var(--success)';
+                if(val === 'wahr') { document.getElementById(`fb-tf-${q}`).classList.remove('hidden'); pointsL1++; checkAllL1Done(); }
+                if(val === 'falsch') { document.getElementById(`corr-box-${q}`).classList.remove('hidden'); }
+            } else {
+                this.style.backgroundColor = 'var(--error)';
+                // Still award point so they can proceed after mistake
+                pointsL1++; checkAllL1Done();
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-check-corr').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const keywords = this.dataset.kws.split(',');
+            const inputVal = document.getElementById(`corr-${id}`).value.toLowerCase();
+            const fb = document.getElementById(`fb-corr-${id}`);
+            const correct = keywords.some(k => inputVal.includes(k.trim()));
+            fb.classList.remove('hidden');
+            if(correct) {
+                fb.innerHTML = '✅ Sehr gut!'; fb.style.color = 'var(--success)';
+                this.disabled = true;
+                document.getElementById(`tq-${id}`).innerHTML = `<strong>${id==='1'?'a)':'d)'}</strong> ${document.getElementById(`corr-${id}`).value}`;
+                pointsL1++; checkAllL1Done();
+            } else {
+                fb.innerHTML = '❌ Noch nicht ganz – versuch ein Gegenword zu verwenden.'; fb.style.color = 'var(--error)';
+            }
+        });
+    });
+
+    // ========== LEVEL 2 ==========
+    const checkJD = num => {
+        const s1 = document.getElementById(`jd${num}-1`).value;
+        const s2 = document.getElementById(`jd${num}-2`).value;
+        const fb = document.getElementById(`fb-jd-${num}`);
+        if(s1 && s2) {
+            const ok = (num===1||num===3) ? s1===s2 : s1!==s2;
+            fb.innerHTML = ok ? '✅ Wahre Aussage!' : '❌ Falsch!';
+            fb.style.color = ok ? 'var(--success)' : 'var(--error)';
+            if(ok) { document.getElementById(`jd${num}-1`).disabled=true; document.getElementById(`jd${num}-2`).disabled=true; }
+        }
+    };
+    [1,2,3].forEach(n => {
+        document.getElementById(`jd${n}-1`).addEventListener('change', () => checkJD(n));
+        document.getElementById(`jd${n}-2`).addEventListener('change', () => checkJD(n));
+    });
+
+    // ========== LEVEL 3 ==========
+    let selV=null, solvedVec=0;
+    const vBtns=document.querySelectorAll('.vector-btn'), sBtns=document.querySelectorAll('.sit-btn'), fbVec=document.getElementById('fb-vector');
+    vBtns.forEach(b=>b.addEventListener('click',()=>{vBtns.forEach(x=>{if(!x.disabled)x.style.backgroundColor=''}); b.style.backgroundColor='var(--accent-blue)'; selV=b;}));
+    sBtns.forEach(s=>s.addEventListener('click',()=>{
+        if(!selV||s.disabled)return;
+        if(s.dataset.v===selV.dataset.v){s.innerHTML+=' ✅';s.disabled=true;selV.disabled=true;s.style.borderColor='var(--success)';selV.style.borderColor='var(--success)';selV.style.backgroundColor='var(--success)';selV=null;solvedVec++;fbVec.innerHTML=solvedVec===3?'Perfekt! Kraft skaliert direkt mit der erreichten Geschwindigkeit.':'✅ Logisch zugeordnet!';fbVec.className='feedback-msg success';}
+        else{fbVec.innerHTML='❌ Je mehr Kraft, desto höher die Endgeschwindigkeit.';fbVec.className='feedback-msg error';}
+        fbVec.classList.remove('hidden');
+    }));
+
+    // ========== LEVEL 4 ==========
+    const checkAllMath = () => {
+        let allOk = true;
+        [1,2,3,4].forEach(i => {
+            const sel=document.getElementById(`ms-${i}`), fb=document.getElementById(`ms-fb-${i}`);
+            if(!sel.value){allOk=false;return;}
+            if(sel.value===sel.dataset.ans){fb.innerHTML='✅ Richtig!';fb.style.color='var(--success)';}
+            else{fb.innerHTML='❌ Nochmal!';fb.style.color='var(--error)';allOk=false;}
+        });
+        document.getElementById('fb-math').classList.toggle('hidden',!allOk);
+    };
+    [1,2,3,4].forEach(i=>document.getElementById(`ms-${i}`).addEventListener('change',checkAllMath));
+
+    // ========== LEVEL 5 ==========
+    document.querySelectorAll('.det-sel').forEach(sel => {
+        sel.addEventListener('change', function() {
+            const fb = this.nextElementSibling; // the .det-fb div right after the select
+            if(!this.value){ fb.style.display='none'; return; }
+            fb.style.display='block';
+            if(this.value===this.dataset.correct){
+                fb.innerHTML = this.dataset.fbOk;
+                fb.style.background='rgba(16,185,129,0.2)';
+                fb.style.color='var(--success)';
+            } else {
+                fb.innerHTML = this.dataset.fbErr;
+                fb.style.background='rgba(225,29,72,0.2)';
+                fb.style.color='var(--error)';
+            }
+        });
+    });
+
+    // ========== LEVEL 6 ==========
+    const varList = [
+        { sym:'F', label:'die Kraft <strong>\\(F\\)</strong>',                       side:'left'  },
+        { sym:'t', label:'die Einwirkungsdauer <strong>\\(\\Delta t\\)</strong)',    side:'left'  },
+        { sym:'m', label:'die Masse <strong>\\(m\\)</strong>',                       side:'right' },
+        { sym:'v', label:'die Geschwindigkeitsänderung <strong>\\(\\Delta v\\)</strong>', side:'right' }
+    ];
+
+    // F*t = m*v  →  left side and right side
+    // If source and target are on SAME side → inverse (↑ one ↓ other), DIFFERENT sides → same direction
+    function computeEffect(src, tgt) {
+        const sl = varList.find(v=>v.sym===src).side;
+        const tl = varList.find(v=>v.sym===tgt).side;
+        return sl===tl ? -1 : 1;  // same side → inverse, opposite → direct
+    }
+
+    // Build all combos: src ≠ tgt, direction up or down
+    const allCombos = [];
+    ['F','t','m','v'].forEach(src => {
+        ['F','t','m','v'].forEach(tgt => {
+            if(src===tgt) return;
+            ['größer','kleiner'].forEach(dir => {
+                const consts = ['F','t','m','v'].filter(s=>s!==src&&s!==tgt);
+                allCombos.push({src, tgt, dir, consts});
+            });
+        });
+    });
+
+    function getLabel(sym) { return varList.find(v=>v.sym===sym).label; }
+
+    let jdOk=0, jdBad=0, curCombo=null, waiting=false;
+
+    function generateQ() {
+        waiting=false;
+        document.querySelectorAll('.jd-ans-btn').forEach(b=>{b.disabled=false;b.style.background='';b.style.borderColor='';});
+        document.getElementById('jd-gen-fb').style.display='none';
+        curCombo = allCombos[Math.floor(Math.random()*allCombos.length)];
+        const c=curCombo;
+        const chgWord=c.dir==='größer'?'größer wird':'kleiner wird';
+        const c1=getLabel(c.consts[0]), c2=getLabel(c.consts[1]);
+        document.getElementById('jd-gen-question').innerHTML=
+            `Wenn ${getLabel(c.src)} <strong>${chgWord}</strong>,<br>
+             wie ändert sich dann ${getLabel(c.tgt)}?<br>
+             <small style="opacity:0.75; display:block; margin-top:0.5rem;">Konstant: ${c1} bleibt unverändert.</small>
+             <small style="opacity:0.75; display:block;">Konstant: ${c2} bleibt unverändert.</small>`;
+        if(typeof MathJax!=='undefined') MathJax.typeset(['#jd-gen-question']);
+    }
+
+    document.querySelectorAll('.jd-ans-btn').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            if(waiting)return;
+            const c=curCombo;
+            const effect=computeEffect(c.src,c.tgt);
+            const srcUp=c.dir==='größer';
+            const tgtDir=(srcUp?1:-1)*effect;
+            const correctAns=tgtDir>0?'größer':'kleiner';
+            waiting=true;
+            document.querySelectorAll('.jd-ans-btn').forEach(b=>b.disabled=true);
+            const fb=document.getElementById('jd-gen-fb');
+            fb.style.display='block';
+            if(this.dataset.val===correctAns){
+                jdOk++;
+                this.style.background='var(--success)'; this.style.borderColor='var(--success)';
+                fb.innerHTML=`✅ Richtig! Je ${c.dir==='größer'?'größer':'kleiner'} ${getLabel(c.src)} wird, desto ${correctAns} wird ${getLabel(c.tgt)}.`;
+                fb.style.background='rgba(16,185,129,0.2)'; fb.style.color='var(--success)';
+            } else {
+                jdBad++;
+                this.style.background='var(--error)'; this.style.borderColor='var(--error)';
+                fb.innerHTML=`❌ Knapp daneben! Richtig wäre: Je ${c.dir==='größer'?'größer':'kleiner'} ${getLabel(c.src)} wird, desto <strong>${correctAns}</strong> wird ${getLabel(c.tgt)}. Überlege anhand der Je-Desto-Regeln, die du kennst!`;
+                fb.style.background='rgba(225,29,72,0.2)'; fb.style.color='var(--error)';
+            }
+            document.getElementById('jd-gen-score').innerHTML=`✅ Richtig: ${jdOk} &nbsp;|&nbsp; ❌ Falsch: ${jdBad}`;
+            if(typeof MathJax!=='undefined') MathJax.typeset(['#jd-gen-fb']);
+        });
+    });
+
+    document.getElementById('jd-gen-next').addEventListener('click', generateQ);
+    generateQ();
+    </script>
+</body>
+</html>
