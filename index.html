@@ -57,7 +57,7 @@
                     <div id="feedback" class="feedback-msg hidden"></div>
                     <button class="btn mt-1" id="btn-check">Idee überprüfen</button>
                     <button class="btn btn-outline mt-1 hidden" id="btn-solution">Lösungsvorschlag anzeigen</button>
-                    <a href="ABGeschwindigkeitsänderunginteraktiv.html" class="btn btn-outline mt-1 hidden" id="btn-next">Weiter zum Experiment ➔</a>
+                    <a href="ABGeschwindigkeitsänderunginteraktiv.html" class="btn mt-1 hidden" id="btn-next">Weiter zum Experiment ➔</a>
                 </div>
             </div>
         </section>
@@ -74,7 +74,7 @@
 
         btnCheck.addEventListener('click', () => {
             const input = inputFld.value.toLowerCase();
-            if(input.includes('schieb') || input.includes('drück') || input.includes('zieh') || input.includes('kraft') || input.includes('anstoß')) {
+            if(input.includes('schieb') || input.includes('schob') || input.includes('schubs') || input.includes('schups') || input.includes('drück') || input.includes('druck') || input.includes('zieh') || input.includes('zog') || input.includes('kraft') || input.includes('stoß') || input.includes('stoss')) {
                 feedback.innerHTML = "Perfekt! Jemand muss von außen etwas tun, z.B. anschieben. Da wirkt eine Kraft!";
                 feedback.className = "feedback-msg success";
                 btnCheck.classList.add('hidden');
