@@ -150,6 +150,7 @@
 </head>
 
 <body class="p-4 md:p-8 text-slate-800">
+    <a href="index.html" style="z-index: 1000;" class="fixed top-4 right-4 bg-white bg-opacity-90 backdrop-blur border border-blue-300 text-blue-700 font-bold py-2 px-4 rounded-xl shadow-md hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2">🏠 Hauptmenü</a>
 
     <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
 
@@ -373,6 +374,11 @@
                             fundamentale Gesetz gerade komplett selbst hergeleitet. Zeige dem Lehrer kurz einmal den
                             Daumen hoch!
                         </p>
+                        <div class="mt-6 flex justify-center">
+                            <a href="index.html" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 no-underline">
+                                🏠 Projekt abschließen & Zum Hauptmenü
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -770,27 +776,62 @@
             document.getElementById('formula-section').scrollIntoView({ behavior: 'smooth' });
         });
 
-        // --- Formel Baukasten Drag & Drop ---
+        // --- Formel Baukasten Drag & Drop + Touch Hybrid ---
         const dragItems = document.querySelectorAll('.drag-item');
         const dropZones = document.querySelectorAll('.eq-drop-zone');
         let draggedItem = null;
+        let selectedItem = null; // Für iPad Touch-Bedienung
+
+        function handleDropOrClick(zone, item) {
+            if (!item || zone.classList.contains('filled')) return;
+
+            const slot = zone.getAttribute('data-slot');
+            const varName = item.getAttribute('data-var');
+            const htmlContent = item.innerHTML;
+
+            zone.innerHTML = htmlContent;
+            zone.classList.add('filled');
+            eqState[slot] = varName;
+
+            item.style.display = 'none';
+            selectedItem = null;
+            item.classList.remove('ring-4', 'ring-blue-500', 'shadow-lg');
+
+            checkEquation();
+        }
 
         dragItems.forEach(item => {
+            // NATIVES DRAG-START (PC)
             item.addEventListener('dragstart', (e) => {
                 draggedItem = item;
+                if (selectedItem) selectedItem.classList.remove('ring-4', 'ring-blue-500', 'shadow-lg');
+                selectedItem = null;
                 setTimeout(() => item.classList.add('opacity-50'), 0);
             });
             item.addEventListener('dragend', () => {
                 setTimeout(() => {
-                    draggedItem.classList.remove('opacity-50');
+                    if (draggedItem) draggedItem.classList.remove('opacity-50');
                     draggedItem = null;
                 }, 0);
+            });
+
+            // CLICK / TOUCH LOGIK (iPad: Markieren)
+            item.addEventListener('click', () => {
+                if (selectedItem === item) {
+                    item.classList.remove('ring-4', 'ring-blue-500', 'shadow-lg');
+                    selectedItem = null;
+                } else {
+                    dragItems.forEach(i => i.classList.remove('ring-4', 'ring-blue-500', 'shadow-lg'));
+                    item.classList.add('ring-4', 'ring-blue-500', 'shadow-lg');
+                    selectedItem = item;
+                }
             });
         });
 
         let eqState = { left1: null, left2: null, right1: null, right2: null };
 
         dropZones.forEach(zone => {
+            // NATIVE DROP LOGIK (PC)
             zone.addEventListener('dragover', e => {
                 e.preventDefault();
                 if (!zone.classList.contains('filled')) zone.classList.add('drag-over');
@@ -801,31 +842,25 @@
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 zone.classList.remove('drag-over');
-
-                if (zone.classList.contains('filled') || !draggedItem) return;
-
-                const slot = zone.getAttribute('data-slot');
-                const varName = draggedItem.getAttribute('data-var');
-                const htmlContent = draggedItem.innerHTML;
-
-                zone.innerHTML = htmlContent;
-                zone.classList.add('filled');
-                eqState[slot] = varName;
-
-                draggedItem.style.display = 'none';
-
-                checkEquation();
+                if (draggedItem) {
+                    handleDropOrClick(zone, draggedItem);
+                }
             });
 
+            // CLICK / TOUCH LOGIK (iPad: Einfügen / Zurücklegen)
             zone.addEventListener('click', () => {
-                if (zone.classList.contains('filled')) {
-                    const varName = eqState[zone.getAttribute('data-slot')];
+                if (selectedItem && !zone.classList.contains('filled')) {
+                    handleDropOrClick(zone, selectedItem);
+                } else if (zone.classList.contains('filled')) {
+                    // Wenn gefüllt, Baustein zurücklegen
+                    const slot = zone.getAttribute('data-slot');
+                    const varName = eqState[slot];
                     const poolItem = document.querySelector(`.drag-item[data-var="${varName}"]`);
                     poolItem.style.display = 'inline-block';
 
                     zone.innerHTML = '';
                     zone.classList.remove('filled');
-                    eqState[zone.getAttribute('data-slot')] = null;
+                    eqState[slot] = null;
 
                     document.getElementById('formula-success').classList.add('hidden-content');
                     document.getElementById('formula-success').classList.remove('visible-content');

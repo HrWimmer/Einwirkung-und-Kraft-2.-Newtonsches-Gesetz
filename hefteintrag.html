@@ -8,6 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
+        .selected-chip {
+            border: 2px solid white !important;
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transform: scale(1.05);
+            background: var(--accent-cyan) !important;
+            color: white !important;
+        }
         .copy-note {
             margin-top: 1.5rem;
             text-align: center;
@@ -22,6 +29,7 @@
 </head>
 
 <body>
+    <a href="index.html" class="global-home-btn">🏠 Hauptmenü</a>
     <div class="stars"></div>
     <div class="nav-header" style="position: relative;">
         <a href="simulation.html" class="btn btn-outline"
@@ -121,10 +129,23 @@
         chips.forEach(chip => {
             chip.addEventListener('click', () => {
                 if (chip.classList.contains('used')) return;
-                chips.forEach(c => c.style.border = '2px solid transparent');
-                chip.style.border = '2px solid white';
-                selectedWord = chip.dataset.word;
-                selectedElement = chip;
+                
+                if (selectedElement === chip) {
+                    // Deselect
+                    chip.style.border = '2px solid transparent';
+                    chip.classList.remove('selected-chip');
+                    selectedWord = null;
+                    selectedElement = null;
+                } else {
+                    // Select
+                    chips.forEach(c => {
+                        c.style.border = '2px solid transparent';
+                        c.classList.remove('selected-chip');
+                    });
+                    chip.classList.add('selected-chip');
+                    selectedWord = chip.dataset.word;
+                    selectedElement = chip;
+                }
             });
         });
 

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physik 8: Projekt Kraft - Station 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a href="index.html" class="global-home-btn">🏠 Hauptmenü</a>
+    <div class="stars"></div>
+    
+    <div class="nav-header">
+        <h1>Die Kraft - Mission 1</h1>
+        <div class="progress-pills">
+            <div class="pill active"></div>
+            <div class="pill"></div>
+            <div class="pill"></div>
+            <div class="pill"></div>
+        </div>
+    </div>
+
+    <main class="container">
+        
+        <header class="text-center mb-1">
+            <h1 class="glitch" data-text="Die Kraft">Die Kraft</h1>
+            <p class="subtitle">Entdecke das Geheimnis der Bewegung!</p>
+        </header>
+
+        <section class="glass-panel">
+            <h2>Gedankenexperiment (Station 1)</h2>
+            <div class="content-box mt-1">
+                <!-- SVG Clipart -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <svg width="200" height="100" viewBox="0 0 200 100">
+                        <path d="M20 80 Q 50 80 80 80 L 160 80 Q 180 80 180 60" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Sled Board -->
+                        <rect x="50" y="65" width="10" height="15" fill="#3b82f6"/>
+                        <rect x="130" y="65" width="10" height="15" fill="#3b82f6"/>
+                        <rect x="40" y="55" width="110" height="10" fill="#e11d48" rx="3"/>
+                        
+                        <!-- Kind 1 -->
+                        <circle cx="70" cy="30" r="10" fill="#1e293b"/>
+                        <rect x="65" y="40" width="10" height="15" fill="#1e293b"/>
+                        <!-- Kind 2 -->
+                        <circle cx="110" cy="30" r="10" fill="#1e293b"/>
+                        <rect x="105" y="40" width="10" height="15" fill="#1e293b"/>
+                    </svg>
+                </div>
+                
+                <p>Zwei Kinder sitzen auf einem Schlitten am oberen Rand eines verschneiten Hügels, auf einer sehr langen, glatten Ebene.</p>
+                <div class="task-box mt-1">
+                    <h3>Dein Auftrag:</h3>
+                    <label for="sled-input">Was muss passieren, damit die Kinder <em>aus dem Stand</em> auf der flachen Piste an Geschwindigkeit gewinnen?</label>
+                    <textarea id="sled-input" placeholder="Schreibe deine Idee oder Stichpunkte hier auf..." rows="3"></textarea>
+                    
+                    <div id="feedback" class="feedback-msg hidden"></div>
+                    <button class="btn mt-1" id="btn-check">Idee überprüfen</button>
+                    <button class="btn btn-outline mt-1 hidden" id="btn-solution">Lösungsvorschlag anzeigen</button>
+                    <a href="ABGeschwindigkeitsänderunginteraktiv.html" class="btn mt-1 hidden" id="btn-next">Weiter zum Experiment ➔</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let attempts = 0;
+        const btnCheck = document.getElementById('btn-check');
+        const btnSolution = document.getElementById('btn-solution');
+        const feedback = document.getElementById('feedback');
+        const inputFld = document.getElementById('sled-input');
+        const btnNext = document.getElementById('btn-next');
+
+        btnCheck.addEventListener('click', () => {
+            const input = inputFld.value.toLowerCase();
+            if(input.includes('schieb') || input.includes('schob') || input.includes('schubs') || input.includes('schups') || input.includes('drück') || input.includes('druck') || input.includes('zieh') || input.includes('zog') || input.includes('kraft') || input.includes('stoß') || input.includes('stoss')) {
+                feedback.innerHTML = "Perfekt! Jemand muss von außen etwas tun, z.B. anschieben. Da wirkt eine Kraft!";
+                feedback.className = "feedback-msg success";
+                btnCheck.classList.add('hidden');
+                btnSolution.classList.add('hidden');
+                btnNext.classList.remove('hidden');
+                feedback.classList.remove('hidden');
+                return;
+            } 
+            
+            attempts++;
+            feedback.className = "feedback-msg error";
+            feedback.classList.remove('hidden');
+            if (input.length < 3) feedback.innerHTML = "Bitte schreibe zumindest ein paar Stichpunkte auf.";
+            else if (attempts === 1) feedback.innerHTML = "Guter Versuch! <strong>Tipp 1:</strong> Stell dir vor, du stehst <em>hinter</em> dem Schlitten, oder jemand an einem Seil steht <em>vor</em> dem Schlitten. Was könntet ihr mit den Händen machen?";
+            else if (attempts === 2) feedback.innerHTML = "Wir suchen ein Tätigkeitswort. Es beginnt z.B. mit 'sch' oder 'z'...";
+            else {
+                feedback.innerHTML = "<strong>Tipp 3:</strong> Die Bewegung ändert sich durch eine sogenannte <em>Einwirkung</em> von außen. Was würdest du also tun?";
+                btnSolution.classList.remove('hidden');
+            }
+        });
+
+        btnSolution.addEventListener('click', () => {
+            inputFld.value = "Der Schlitten muss z.B. angeschoben oder gezogen werden.";
+            btnSolution.classList.add('hidden');
+            feedback.innerHTML = "Hier ist ein Lösungsvorschlag. Klicke auf 'Idee überprüfen', um fortzufahren!";
+            feedback.className = "feedback-msg info";
+        });
+    </script>
+</body>
+</html>
