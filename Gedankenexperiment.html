@@ -74,8 +74,32 @@
         const btnNext = document.getElementById('btn-next');
 
         btnCheck.addEventListener('click', () => {
-            const input = inputFld.value.toLowerCase();
-            if(input.includes('schieb') || input.includes('schob') || input.includes('schubs') || input.includes('schups') || input.includes('drück') || input.includes('druck') || input.includes('zieh') || input.includes('zog') || input.includes('kraft') || input.includes('stoß') || input.includes('stoss')) {
+            const input = inputFld.value.toLowerCase().trim();
+            const words = input.split(/\s+/).filter(w => w.length > 2);
+            
+            // 1. Basale Längenprüfung
+            if (words.length < 3) {
+                feedback.innerHTML = "Das ist etwas zu kurz. Beschreibe deinen Gedanken bitte in einem ganzen Satz!";
+                feedback.className = "feedback-msg error";
+                feedback.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Prüfung auf physikalische Relevanz (Aktion und Subjekt)
+            const hasAction = input.includes('schieb') || input.includes('schob') || input.includes('schubs') || 
+                              input.includes('schups') || input.includes('drück') || input.includes('druck') || 
+                              input.includes('zieh') || input.includes('zog') || input.includes('kraft') || 
+                              input.includes('stoß') || input.includes('stoss') || input.includes('einwirk');
+            
+            const hasSubject = input.includes('jemand') || input.includes('person') || input.includes('kind') || 
+                               input.includes('mensch') || input.includes('man') || input.includes('hand') || 
+                               input.includes('seil') || input.includes('schlitt') || input.includes('finger');
+
+            // 3. Nonsens-Sperre (einfache Prüfung auf bekannte Off-Topic Wörter in der Lerneinheit)
+            const offTopicWords = ['jesus', 'gott', 'hallelujah', 'amen', 'gebet', 'bibel'];
+            const containsOffTopic = offTopicWords.some(w => input.includes(w));
+
+            if (hasAction && hasSubject && !containsOffTopic) {
                 feedback.innerHTML = "Perfekt! Jemand muss von außen etwas tun, z.B. anschieben. Da wirkt eine Kraft!";
                 feedback.className = "feedback-msg success";
                 btnCheck.classList.add('hidden');
@@ -88,12 +112,21 @@
             attempts++;
             feedback.className = "feedback-msg error";
             feedback.classList.remove('hidden');
-            if (input.length < 3) feedback.innerHTML = "Bitte schreibe zumindest ein paar Stichpunkte auf.";
-            else if (attempts === 1) feedback.innerHTML = "Guter Versuch! <strong>Tipp 1:</strong> Stell dir vor, du stehst <em>hinter</em> dem Schlitten, oder jemand an einem Seil steht <em>vor</em> dem Schlitten. Was könntet ihr mit den Händen machen?";
-            else if (attempts === 2) feedback.innerHTML = "Wir suchen ein Tätigkeitswort. Es beginnt z.B. mit 'sch' oder 'z'...";
-            else {
-                feedback.innerHTML = "<strong>Tipp 3:</strong> Die Bewegung ändert sich durch eine sogenannte <em>Einwirkung</em> von außen. Was würdest du also tun?";
-                btnSolution.classList.remove('hidden');
+            
+            if (containsOffTopic) {
+                feedback.innerHTML = "Konzentriere dich bitte auf die physikalische Beschreibung des Schlittens.";
+            } else if (!hasAction) {
+                feedback.innerHTML = "Guter Ansatz, aber <em>was genau</em> muss mit dem Schlitten gemacht werden? (Tipp: Ein Verb wie 'sch...' oder 'z...')";
+            } else if (!hasSubject) {
+                feedback.innerHTML = "Wer oder was bewirkt diese Änderung? Denke an die Einwirkung von außen.";
+            } else {
+                // Fallback / Tipps
+                if (attempts === 1) feedback.innerHTML = "Stell dir vor, du stehst <em>hinter</em> dem Schlitten oder hälst ein Seil. Was tust du?";
+                else if (attempts === 2) feedback.innerHTML = "Die Antwort hat mit 'Schieben' oder 'Ziehen' zu tun.";
+                else {
+                    feedback.innerHTML = "Die Bewegung ändert sich durch eine sogenannte <em>Einwirkung</em> von außen.";
+                    btnSolution.classList.remove('hidden');
+                }
             }
         });
 

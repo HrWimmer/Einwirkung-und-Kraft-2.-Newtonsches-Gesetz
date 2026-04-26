@@ -216,9 +216,9 @@
             <div class="det-card">
                 <p><strong>Fallakte #003:</strong> Zwei Rennschlitten-Teams trainieren. Der Trainer hat für beide <strong>identische Schlitten bereitgestellt – die Masse ist gleich</strong>. Er ruft laut „Los!“, zählt bis drei und ruft „Stopp!“ – <strong>beide Teams schieben also exakt gleich lange (gleiche Einwirkungsdauer)</strong>. Team A erzielt eine Geschwindigkeitsänderung von <strong>6 m/s</strong>, Team B nur <strong>2 m/s</strong>. Wie kann das sein?</p>
                 <select class="det-sel"
-                    data-correct="m"
-                    data-fb-ok="✅ Perfekt! Gleiche Kraft, gleiche Zeit – Team B's Schlitten ist schwerer (größeres m). Das nennen wir Trägheit!"
-                    data-fb-err="❌ Genau hinschauen: Kraft und Dauer sind beide als gleich bestätigt. Was ist bei Team B's Schlitten anders?">
+                    data-correct="F"
+                    data-fb-ok="✅ Perfekt! Da Masse und Einwirkungsdauer gleich sind, muss Team A viel kräftiger angeschoben haben (größeres F)!"
+                    data-fb-err="❌ Genau hinschauen: Masse und Dauer sind beide als gleich bestätigt. Was ist dann unterschiedlich?">
                     <option value="">Wähle die verräterische Variable...</option>
                     <option value="F">Unterschied in der Kraft (F)</option>
                     <option value="m">Unterschied in der Masse (m)</option>
@@ -314,18 +314,86 @@
     document.querySelectorAll('.btn-check-corr').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = this.dataset.id;
-            const keywords = this.dataset.kws.split(',');
             const inputVal = document.getElementById(`corr-${id}`).value.toLowerCase();
             const fb = document.getElementById(`fb-corr-${id}`);
-            const correct = keywords.some(k => inputVal.includes(k.trim()));
+            
+            // --- Neu: Struktur- und Sinnprüfung ---
+            // Prüfen, ob "je" und "desto/umso" vorkommen und logisch richtig gereiht sind
+            const jeMatch = inputVal.match(/\bje\b/);
+            const destoMatch = inputVal.match(/\b(desto|umso)\b/);
+
+            if (!jeMatch || !destoMatch || jeMatch.index > destoMatch.index) {
+                fb.classList.remove('hidden');
+                fb.innerHTML = '❌ Bitte formuliere einen vollständigen und logischen "Je ..., desto ..."-Satz!'; 
+                fb.style.color = 'var(--error)';
+                return; // Abbruch, wenn die Satzstruktur schon Quatsch ist
+            }
+
+            // Satzteil 1 (Bedingung, z.B. Masse) und Satzteil 2 (Folge, z.B. Δv) extrahieren
+            const conditionStr = inputVal.substring(jeMatch.index + jeMatch[0].length, destoMatch.index);
+            const consequenceStr = inputVal.substring(destoMatch.index + destoMatch[0].length);
+
+            const hasWords = (str, words) => words.some(w => str.includes(w));
+
+            let correct = false;
+            let fullCorrectSentence = "";
+
+            if (id === '1') {
+                // Bedingungsteil prüfen (Masse)
+                const hasMassSubject = hasWords(conditionStr, ['masse', 'gewicht', 'körper', 'm', 'gegenstand', 'objekt', 'schlitt', 'klotz']);
+                const isHeavy = hasWords(conditionStr, ['schwer', 'groß', 'größ', 'hoch', 'höh', 'mehr', 'zunimm', 'steig']);
+                const isLight = hasWords(conditionStr, ['leicht', 'klein', 'gering', 'wenig', 'niedrig', 'abnimm', 'sink']);
+
+                // Folgeteil prüfen (Δv)
+                const hasVelSubject = hasWords(consequenceStr, ['geschwindigkeit', 'tempo', 'v', 'beschleunigung', 'änderung', 'schnell']);
+                const isSmallV = hasWords(consequenceStr, ['klein', 'gering', 'wenig', 'sink', 'niedrig', 'abnimm']);
+                const isBigV = hasWords(consequenceStr, ['groß', 'größ', 'hoch', 'höh', 'mehr', 'steig', 'zunimm']);
+
+                if (hasMassSubject && hasVelSubject) {
+                    if ((isHeavy && isSmallV) || (isLight && isBigV)) {
+                        correct = true;
+                        fullCorrectSentence = isHeavy 
+                            ? "Je schwerer der Körper ist, desto kleiner ist seine Geschwindigkeitsänderung bei gleicher Kraft und Einwirkungsdauer."
+                            : "Je leichter der Körper ist, desto größer ist seine Geschwindigkeitsänderung bei gleicher Kraft und Einwirkungsdauer.";
+                    }
+                }
+            } else if (id === '4') {
+                // Bedingungsteil prüfen (Zeit)
+                const hasTimeSubject = hasWords(conditionStr, ['zeit', 'dauer', 'einwirkung', 't', 'intervall', 'schieb', 'drück', 'zieh']);
+                const isLong = hasWords(conditionStr, ['läng', 'mehr', 'groß', 'größ', 'hoch', 'höh']);
+                const isShort = hasWords(conditionStr, ['kürz', 'wenig', 'gering', 'klein', 'niedrig']);
+                
+                // Folgeteil prüfen (Δv)
+                const hasVelSubject = hasWords(consequenceStr, ['geschwindigkeit', 'tempo', 'v', 'beschleunigung', 'änderung', 'schnell']);
+                const isBigV = hasWords(consequenceStr, ['groß', 'größ', 'hoch', 'höh', 'mehr', 'steig', 'zunimm']);
+                const isSmallV = hasWords(consequenceStr, ['klein', 'gering', 'wenig', 'sink', 'niedrig', 'abnimm']);
+
+                if (hasTimeSubject && hasVelSubject) {
+                    if ((isLong && isBigV) || (isShort && isSmallV)) {
+                        correct = true;
+                        fullCorrectSentence = isLong
+                            ? "Je länger die Kraft auf einen Körper einwirkt, desto größer ist seine Geschwindigkeitsänderung."
+                            : "Je kürzer die Kraft auf einen Körper einwirkt, desto kleiner ist seine Geschwindigkeitsänderung.";
+                    }
+                }
+            }
+
             fb.classList.remove('hidden');
             if(correct) {
-                fb.innerHTML = '✅ Sehr gut!'; fb.style.color = 'var(--success)';
+                fb.innerHTML = `✅ Sehr gut!<br><span style="font-size:0.9rem; font-weight:normal; display:inline-block; margin-top:5px; color:var(--text-color);">Eine sehr gute Musterlösung für dein Heft lautet z.B.:<br><em>„${fullCorrectSentence}“</em></span>`; 
+                fb.style.color = 'var(--success)';
                 this.disabled = true;
-                document.getElementById(`tq-${id}`).innerHTML = `<strong>${id==='1'?'a)':'d)'}</strong> ${document.getElementById(`corr-${id}`).value}`;
+                
+                const questionP = document.getElementById(`tq-${id}`);
+                if (!questionP.dataset.original) {
+                    questionP.dataset.original = questionP.innerHTML;
+                }
+                questionP.innerHTML = `<span style="text-decoration: line-through; opacity: 0.6;">${questionP.dataset.original}</span><br><span style="color: var(--success); font-weight: bold;">${id==='1'?'a)':'d)'}</span> <span style="color: var(--success);">${fullCorrectSentence}</span>`;
+                
                 pointsL1++; checkAllL1Done();
             } else {
-                fb.innerHTML = '❌ Noch nicht ganz – versuch ein Gegenword zu verwenden.'; fb.style.color = 'var(--error)';
+                fb.innerHTML = '❌ Das ist noch nicht ganz richtig oder unvollständig. Achte darauf, Masse/Zeit UND die Geschwindigkeit im Satz korrekt zu erwähnen.'; 
+                fb.style.color = 'var(--error)';
             }
         });
     });
